@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đăng ký vé - Parksmart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    /* HEADER */
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }    
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; background:white; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:28px; overflow:hidden; padding:4px; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .notification { position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; }
+    .badge { position:absolute; top:-4px; right:-4px; width:14px; height:14px; border-radius:50%; background:#C02727; color:white; font-size:10px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+
+    /* MAIN */
+    .main { display:flex; flex:1; }
+
+    /* SIDEBAR */
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }    
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    /* CONTENT */
+    .content { flex:1; padding:24px; }
+    .page-title { font-size:24px; font-weight:700; color:#111; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; margin-bottom:24px; }
+
+    /* STEPPER */
+    .stepper { display:flex; align-items:center; margin-bottom:32px; }
+    .step { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .step-circle { width:32px; height:32px; border-radius:50%; border:2px solid #ccc; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#ccc; background:white; }
+    .step-circle.active { border-color:#085CA7; color:#085CA7; }
+    .step-circle.done { background:#085CA7; border-color:#085CA7; color:white; }
+    .step-label { font-size:13px; color:#ccc; font-weight:500; }
+    .step-label.active { color:#085CA7; }
+    .step-line { flex:1; height:2px; background:#ccc; margin:0 8px; margin-bottom:20px; }
+    .step-line.done { background:#085CA7; }
+
+    /* CARD BOX */
+    .box { background:white; border-radius:12px; padding:24px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+    .box-title { font-size:18px; font-weight:700; color:#085CA7; margin-bottom:16px; }
+
+    /* LOẠI XE */
+    .xe-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .xe-card { border:2px solid #e0e0e0; border-radius:10px; padding:20px; display:flex; flex-direction:column; align-items:center; gap:10px; cursor:pointer; transition:all 0.2s; }
+    .xe-card:hover { border-color:#085CA7; background:#f0f6ff; }
+    .xe-card.selected { border-color:#085CA7; background:#e8f0fe; }
+    .xe-card span { font-size:16px; font-weight:500; }
+
+    /* GÓI VÉ */
+    .goi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+    .goi-card { border:2px solid #e0e0e0; border-radius:10px; padding:20px; cursor:pointer; transition:all 0.2s; }
+    .goi-card:hover { border-color:#085CA7; }
+    .goi-card.selected { border-color:#085CA7; background:#e8f0fe; }
+    .goi-gia { font-size:28px; font-weight:800; color:#085CA7; margin-bottom:4px; }
+    .goi-ten { font-size:16px; font-weight:600; color:#333; margin-bottom:4px; }
+    .goi-mo-ta { font-size:13px; color:#888; }
+
+    /* BUTTON */
+    .btn-next { width:100%; padding:16px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:18px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.2s; }
+    .btn-next:hover { background:#064d8f; }
+
+    /* DROPDOWN */
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    @media(max-width:768px) {
+      .main { flex-direction:column; }
+      .sidebar { width:100%; }
+      .xe-grid, .goi-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+    <div class="logo" style="overflow:hidden; padding:0;">
+    <img th:src="@{/images/logo-neu.png}" 
+     src="/images/logo-neu.png" 
+     alt="Logo NEU" 
+     style="width:100%; height:100%; object-fit:cover;">
+</div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="notification">
+        <i class="fa-regular fa-bell"></i>
+        <div class="badge">1</div>
+      </div>
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Người dùng'}">Nguyễn Văn A</div>
+          <a href="/logout" class="dropdown-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <a href="/homepage" class="menu-item"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+      <a href="/vi-tri-bai-do" class="menu-item"><i class="fa-solid fa-location-dot"></i> Vị trí bãi đỗ</a>
+      <a href="/dang-ky-ve" class="menu-item active"><i class="fa-solid fa-ticket"></i> Đăng ký vé</a>
+      <a href="/ve-cua-toi" class="menu-item"><i class="fa-solid fa-receipt"></i> Vé của tôi</a>
+      <a href="/chi-phi" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Chi phí và lịch sử</a>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="page-title">Đăng ký vé tháng</div>
+      <div class="page-subtitle">Đăng ký gửi xe theo tháng để dễ dùng bãi đỗ của trường</div>
+
+      <!-- STEPPER -->
+      <div class="stepper">
+        <div class="step">
+          <div class="step-circle active" id="circle1">1</div>
+          <div class="step-label active">Chọn gói</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step">
+          <div class="step-circle" id="circle2">2</div>
+          <div class="step-label" id="label2">Thông tin xe</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step">
+          <div class="step-circle" id="circle3">3</div>
+          <div class="step-label" id="label3">Xác nhận</div>
+        </div>
+      </div>
+
+      <!-- BƯỚC 1 -->
+      <div id="buoc1">
+        <div class="box">
+          <div class="box-title">Chọn loại xe</div>
+          <div class="xe-grid">
+            <div class="xe-card" onclick="chonXe('Xe máy', this)">
+              <i class="fa-solid fa-motorcycle" style="font-size:40px; color:#085CA7;"></i>
+              <span>Xe máy</span>
+            </div>
+            <div class="xe-card" onclick="chonXe('Xe ô tô', this)">
+              <i class="fa-solid fa-car" style="font-size:40px; color:#085CA7;"></i>
+              <span>Xe ô tô</span>
+            </div>
+            <div class="xe-card" onclick="chonXe('Xe đạp', this)">
+              <i class="fa-solid fa-bicycle" style="font-size:40px; color:#085CA7;"></i>
+              <span>Xe đạp</span>
+            </div>
+          </div>
+        </div>
+        <div class="box">
+          <div class="box-title">Chọn gói</div>
+          <div class="goi-grid">
+            <div class="goi-card" onclick="chonGoi('Vé tháng', this)">
+              <div class="goi-gia" id="gia-thang">150.000</div>
+              <div class="goi-ten">Vé tháng</div>
+              <div class="goi-mo-ta">Không giới hạn gửi trong 30 ngày</div>
+            </div>
+            <div class="goi-card" onclick="chonGoi('Vé quý', this)">
+              <div class="goi-gia" id="gia-quy">405.000</div>
+              <div class="goi-ten">Vé quý</div>
+              <div class="goi-mo-ta">3 tháng - tiết kiệm 10%</div>
+            </div>
+            <div class="goi-card" onclick="chonGoi('Vé năm', this)">
+              <div class="goi-gia" id="gia-nam">1.440.000</div>
+              <div class="goi-ten">Vé năm</div>
+              <div class="goi-mo-ta">12 tháng - tiết kiệm 20%</div>
+            </div>
+          </div>
+          <button class="btn-next" onclick="nextBuoc(2)">
+            Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- BƯỚC 2 -->
+      <div id="buoc2" style="display:none;">
+        <div class="box">
+          <div class="box-title">Thông tin phương tiện</div>
+          <div id="bienSoWrap" style="margin-bottom:16px;">
+            <label style="font-size:14px; color:#555; display:block; margin-bottom:6px;">Biển số xe</label>
+            <input type="text" id="bienSo" placeholder="VD: 59B-12345"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px; outline:none;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:14px; color:#555; display:block; margin-bottom:6px;">Loại xe đã chọn</label>
+            <input type="text" id="loaiXeDisplay" readonly
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px; background:#f9f9f9; color:#555;">
+          </div>
+          <div style="margin-bottom:24px;">
+            <label style="font-size:14px; color:#555; display:block; margin-bottom:6px;">Khu vực bãi đỗ</label>
+            <select id="khuVuc"
+              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:16px; outline:none; background:white; color:#555;">
+            </select>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn-next" style="background:white; color:#085CA7; border:2px solid #085CA7; flex:0 0 140px;" onclick="nextBuoc(1)">
+              <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </button>
+            <button class="btn-next" onclick="nextBuoc(3)">
+              Tiếp theo <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BƯỚC 3 -->
+      <div id="buoc3" style="display:none;">
+        <div class="box">
+          <div class="box-title">Xác nhận thông tin</div>
+          <div style="background:#f9f9f9; border-radius:8px; padding:20px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Loại xe</span>
+              <span style="font-weight:600;" id="confirm-loaixe"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Gói vé</span>
+              <span style="font-weight:600;" id="confirm-goive"></span>
+            </div>
+            <div id="confirm-bienso-row" style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Biển số xe</span>
+              <span style="font-weight:600;" id="confirm-bienso"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Khu vực bãi đỗ</span>
+              <span style="font-weight:600;" id="confirm-khuvuc"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Ngày đăng ký</span>
+              <span style="font-weight:600;" id="confirm-ngaydangky"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee;">
+              <span style="color:#555;">Ngày hết hạn</span>
+              <span style="font-weight:600;" id="confirm-ngayhethian"></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0;">
+              <span style="color:#555; font-weight:600;">Tổng tiền</span>
+              <span style="font-weight:800; color:#085CA7; font-size:20px;" id="confirm-gia"></span>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn-next" style="background:white; color:#085CA7; border:2px solid #085CA7; flex:0 0 140px;" onclick="quayLaiTuBuoc3()">
+              <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </button>
+            <button class="btn-next" onclick="dangKyVe()">
+              <i class="fa-solid fa-check"></i> Xác nhận đăng ký
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÀN ĐĂNG KÝ THÀNH CÔNG -->
+<div id="buocThanhCong" style="display:none;">
+  <div class="box" style="text-align:center; padding:60px 24px;">
+    <i class="fa-solid fa-circle-check" style="font-size:56px; color:#069B35; margin-bottom:20px;"></i>
+    <div style="font-size:22px; font-weight:700; color:#111; margin-bottom:8px;">Đăng ký thành công</div>
+    <div style="font-size:14px; color:#726E6E; margin-bottom:24px;">Vé tháng đã được tạo và lưu vào hệ thống</div>
+
+    <div style="display:inline-flex; align-items:center; gap:10px; border:1.5px solid #085CA7; border-radius:30px; padding:12px 28px; margin-bottom:32px; font-size:15px; color:#085CA7;">
+      <i class="fa-solid fa-location-dot" style="font-size:18px;"></i>
+      Nhận thẻ cứng và thanh toán tại : <strong>Văn phòng A1, Tầng 1</strong>
+    </div>
+
+    <br>
+    <button class="btn-next" style="width:auto; padding:14px 32px; margin:0 auto;" onclick="window.location.href='/ve-cua-toi'">
+      Xem vé của tôi <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let loaiXe = '';
+  let loaiVe = '';
+  let gia = 0;
+
+  const giaVe = {
+    'Xe máy': { 'Vé tháng': 150000, 'Vé quý': 405000, 'Vé năm': 1440000 },
+    'Xe ô tô': { 'Vé tháng': 1000000, 'Vé quý': 2700000, 'Vé năm': 9600000 },
+    'Xe đạp': { 'Vé tháng': 50000, 'Vé quý': 135000, 'Vé năm': 480000 }
+  };
+
+  function formatGia(so) { return so.toLocaleString('vi-VN') + ' đ'; }
+
+  function chonXe(ten, el) {
+    loaiXe = ten;
+    document.querySelectorAll('.xe-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    if (loaiXe) {
+      document.getElementById('gia-thang').innerText = giaVe[loaiXe]['Vé tháng'].toLocaleString('vi-VN');
+      document.getElementById('gia-quy').innerText = giaVe[loaiXe]['Vé quý'].toLocaleString('vi-VN');
+      document.getElementById('gia-nam').innerText = giaVe[loaiXe]['Vé năm'].toLocaleString('vi-VN');
+    }
+    if (loaiVe) gia = giaVe[loaiXe][loaiVe];
+  }
+
+  function chonGoi(ten, el) {
+    loaiVe = ten;
+    document.querySelectorAll('.goi-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    if (loaiXe) gia = giaVe[loaiXe][loaiVe];
+  }
+
+  function tinhNgayHetHan(loaiVe) {
+    const today = new Date();
+    if (loaiVe === 'Vé tháng') today.setDate(today.getDate() + 30);
+    else if (loaiVe === 'Vé quý') today.setDate(today.getDate() + 90);
+    else if (loaiVe === 'Vé năm') today.setDate(today.getDate() + 365);
+    return today;
+  }
+
+  function formatNgay(date) {
+    return `${String(date.getDate()).padStart(2,'0')}/${String(date.getMonth()+1).padStart(2,'0')}/${date.getFullYear()}`;
+  }
+
+  const khuVucOptions = [
+    'Nhà để xe số 1 - Cổng 207 Giải Phóng, cạnh tòa A2',
+    'Nhà để xe số 2 - Cổng Trần Đại Nghĩa, cạnh giảng đường C',
+    'Nhà để xe số 4 - Cổng Trần Đại Nghĩa, cạnh giảng đường C',
+    'Nhà để xe KTX - Tòa KTX Đại học Kinh tế Quốc dân',
+    'Hầm để xe B2 - Tầng hầm B2 nhà Trung tâm đào tạo'
+  ];
+  const khuVucMap = {
+    'Xe máy': khuVucOptions,
+    'Xe ô tô': khuVucOptions,
+    'Xe đạp': khuVucOptions
+  };
+
+  function capNhatStepper(so) {
+    for (let i = 1; i <= 3; i++) {
+      const circle = document.getElementById('circle'+i);
+      const label = document.getElementById('label'+i);
+      if (i < so) {
+        circle.className = 'step-circle done';
+        circle.innerHTML = '<i class="fa-solid fa-check" style="font-size:12px;"></i>';
+      } else if (i === so) {
+        circle.className = 'step-circle active';
+        circle.innerHTML = i;
+        if (label) label.style.color = '#085CA7';
+      } else {
+        circle.className = 'step-circle';
+        circle.innerHTML = i;
+        if (label) label.style.color = '#ccc';
+      }
+    }
+    for (let i = 1; i <= 2; i++) {
+      const line = document.getElementById('line'+i);
+      if (line) line.style.background = i < so ? '#085CA7' : '#ccc';
+    }
+  }
+
+  function hienBuoc(so) {
+    ['buoc1','buoc2','buoc3'].forEach(id => document.getElementById(id).style.display = 'none');
+    document.getElementById('buoc'+so).style.display = 'block';
+    capNhatStepper(so);
+  }
+
+  function quayLaiTuBuoc3() {
+    if (loaiXe === 'Xe đạp') hienBuoc(2);
+    else hienBuoc(2);
+  }
+
+  function nextBuoc(so) {
+    if (so === 2) {
+      if (!loaiXe) { alert('Vui lòng chọn loại xe!'); return; }
+      if (!loaiVe) { alert('Vui lòng chọn gói vé!'); return; }
+      // Điền loại xe và dropdown khu vực
+      document.getElementById('loaiXeDisplay').value = loaiXe;
+      const select = document.getElementById('khuVuc');
+      select.innerHTML = '<option value="">-- Chọn khu vực --</option>' +
+        khuVucMap[loaiXe].map(kv => `<option value="${kv}">${kv}</option>`).join('');
+      // Xe đạp: ẩn biển số
+      document.getElementById('bienSoWrap').style.display = loaiXe === 'Xe đạp' ? 'none' : 'block';
+      hienBuoc(2);
+      return;
+    }
+    if (so === 3) {
+      // Validate biển số (trừ xe đạp)
+      if (loaiXe !== 'Xe đạp') {
+        const bienSo = document.getElementById('bienSo').value.trim();
+        if (!bienSo) { alert('Vui lòng nhập biển số xe!'); return; }
+      }
+      // Validate khu vực
+      const khuVuc = document.getElementById('khuVuc').value;
+      if (!khuVuc) { alert('Vui lòng chọn khu vực bãi đỗ!'); return; }
+      // Điền xác nhận
+      const bienSo = loaiXe !== 'Xe đạp' ? document.getElementById('bienSo').value.trim() : '';
+      const today = new Date();
+      const hetHan = tinhNgayHetHan(loaiVe);
+      document.getElementById('confirm-loaixe').innerText = loaiXe;
+      document.getElementById('confirm-goive').innerText = loaiVe;
+      document.getElementById('confirm-bienso').innerText = bienSo;
+      document.getElementById('confirm-bienso-row').style.display = loaiXe === 'Xe đạp' ? 'none' : 'flex';
+      document.getElementById('confirm-khuvuc').innerText = khuVuc;
+      document.getElementById('confirm-ngaydangky').innerText = formatNgay(today);
+      document.getElementById('confirm-ngayhethian').innerText = formatNgay(hetHan);
+      document.getElementById('confirm-gia').innerText = formatGia(gia);
+      hienBuoc(3);
+      return;
+    }
+    hienBuoc(so);
+  }
+
+  function dangKyVe() {
+    const bienSo = loaiXe !== 'Xe đạp' ? document.getElementById('bienSo').value.trim() : '';
+    const khuVuc = document.getElementById('khuVuc').value;
+    fetch('/api/dang-ky-ve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ loaiXe, loaiVe, bienSo, khuVuc, gia })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        ['buoc1','buoc2','buoc3'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('buocThanhCong').style.display = 'block';
+        for (let i = 1; i <= 3; i++) {
+          const circle = document.getElementById('circle'+i);
+          const label = document.getElementById('label'+i);
+          circle.className = 'step-circle done';
+          circle.innerHTML = '<i class="fa-solid fa-check" style="font-size:12px;"></i>';
+          if (label) label.style.color = '#085CA7';
+        }
+        for (let i = 1; i <= 2; i++) {
+          document.getElementById('line'+i).style.background = '#085CA7';
+        }
+      } else {
+        alert(data.message);
+      }
+    })
+    .catch(() => alert('Lỗi kết nối server!'));
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    if (!avatar.contains(e.target)) {
+      document.getElementById('userDropdown').style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parksmart - NEU Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Barlow', sans-serif; }
+
+        #page1 { display: flex; min-height: 100vh; background: white; }
+        .left-side { width: 67%; }
+        .left-side img { width: 100%; height: 100vh; object-fit: cover; border-right: 1px solid #085CA7; }
+        .right-side { width: 33%; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; padding: 40px; text-align: center; }
+        .logo-neu { width: 95px; height: auto; margin-bottom: 10px; background: white; border-radius: 50%; }
+        .school-name { color: #085CA7; font-size: 26px; font-weight: 800; line-height: 1.4; }
+        .system-name { color: #085CA7; font-size: 22px; font-weight: 600; line-height: 1.5; }
+
+        .login-box { width: 100%; max-width: 470px; padding: 28px; background: white; border-radius: 12px; box-shadow: 0 4px 8px rgba(8, 92, 167, 0.2); border: 1px solid #999; }
+        .login-title-box { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; }
+        .login-icon { width: 28px; height: 28px; }
+        .login-title { color: #085CA7; font-size: 24px; font-weight: 800; }
+        .login-btn { width: 100%; padding: 14px; background: #2F2F2F; color: #E6E6E6; font-size: 18px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; }
+
+        #page2, #page3, #pageError {
+            display: none;
+            min-height: 100vh;
+            background: url("/images/login-bg.png") center/cover no-repeat;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card { width: 100%; max-width: 560px; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.25); padding: 30px 32px; border-radius: 4px; }
+        .header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .header img { width: 42px; height: 42px; background: white; padding: 4px; border-radius: 50%; }        
+        .school-info h1 { color: #085CA7; font-size: 20px; font-weight: 700; line-height: 1.2; }
+        .school-info p { color: rgba(8,92,167,0.55); font-size: 12px; font-weight: 500; }
+        .title { font-size: 36px; font-weight: 600; color: rgba(0,0,0,0.79); margin-bottom: 30px; }
+
+        .email-input, .password-input { width: 100%; font-size: 20px; color: #333; border: none; outline: none; padding: 5px 0; border-bottom: 1px solid #999; margin-bottom: 16px; }
+        .help-link { font-size: 18px; color: #085CA7; margin-bottom: 60px; cursor: pointer; display: inline-block; }
+        .button-wrap { display: flex; justify-content: flex-end; }
+        .next-btn { background: #085CA7; color: white; font-size: 22px; font-weight: 600; border: none; padding: 12px 36px; cursor: pointer; }
+
+        .error-message { color: #DE2626; font-size: 15px; margin-bottom: 16px; line-height: 1.4; text-align: left; }
+        .has-error input { border-bottom: 1px solid #DE2626 !important; }
+        .email-display { font-size: 20px; font-weight: 600; color: #808080; margin-bottom: 18px; }
+
+        .loading { opacity: 0.6; pointer-events: none; }
+
+        @media (max-width: 1024px) { #page1 { flex-direction: column; } .left-side, .right-side { width: 100%; } .left-side img { height: 300px; } }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: Màn chào -->
+    <div id="page1">
+        <div class="left-side">
+            <img th:src="@{/images/parking-bg.jpg}" src="/images/parking-bg.jpg" alt="Parking System">
+        </div>
+        <div class="right-side">
+            <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU" class="logo-neu">
+            <div class="school-name">ĐẠI HỌC KINH TẾ QUỐC DÂN</div>
+            <div class="system-name">Hệ thống quản lý bãi xe thông minh<br>Parksmart</div>
+            <div class="login-box">
+                <div class="login-title-box">
+                    <img th:src="@{/images/icon-park-solid_people.svg}" src="/images/icon-park-solid_people.svg" alt="User Icon" class="login-icon">
+                    <div class="login-title">ĐĂNG NHẬP</div>
+                </div>
+                <button class="login-btn" onclick="showPage('page2')">
+                    <img th:src="@{/images/logos_microsoft-icon.svg}" src="/images/logos_microsoft-icon.svg" alt="Microsoft" style="width:22px">
+                    Sign in with Microsoft
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: Nhập email -->
+    <div id="page2">
+        <div class="login-card">
+            <div class="header">
+                <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU">
+                <div class="school-info">
+                    <h1>ĐẠI HỌC KINH TẾ QUỐC DÂN</h1>
+                    <p>NATIONAL ECONOMICS UNIVERSITY</p>
+                </div>
+            </div>
+            <div class="title">Đăng nhập</div>
+            <input type="email" id="emailInput" class="email-input" placeholder="someone@st.neu.edu.vn">
+            <div class="help-link">Bạn không truy cập được vào tài khoản?</div>
+            <div class="button-wrap">
+                <button class="next-btn" onclick="validateEmail()">Tiếp theo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE ERROR: Báo lỗi email -->
+    <div id="pageError">
+        <div class="login-card">
+            <div class="header">
+                <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU">
+                <div class="school-info">
+                    <h1>ĐẠI HỌC KINH TẾ QUỐC DÂN</h1>
+                    <p>NATIONAL ECONOMICS UNIVERSITY</p>
+                </div>
+            </div>
+            <div class="title">Đăng nhập</div>
+            <div class="error-message" id="errorMessage">
+                Chúng tôi không tìm thấy tài khoản có tên người dùng đó.
+            </div>
+            <div class="has-error">
+                <input type="text" id="errorEmailDisplay" class="email-input" style="color: #333;" readonly>
+            </div>
+            <div class="help-link">Bạn không truy cập được vào tài khoản?</div>
+            <div class="button-wrap">
+                <button class="next-btn" onclick="showPage('page2')">Quay lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: Nhập mật khẩu -->
+    <div id="page3">
+        <div class="login-card">
+            <div class="header">
+                <img th:src="@{/images/logos_microsoft-icon.svg}" src="/images/logos_microsoft-icon.svg" alt="Microsoft" style="width:34px">
+                <div style="font-size: 25px; font-weight: 600; color: rgba(0,0,0,0.79);">Microsoft</div>
+            </div>
+            <div id="displayEmail" class="email-display"></div>
+            <div class="title" style="font-size: 35px;">Nhập mật khẩu</div>
+            <input type="password" id="passwordInput" class="password-input" placeholder="Mật khẩu">
+            <div id="passwordError" class="error-message" style="display:none;"></div>
+            <div style="color: #085CA7; font-size: 18px; cursor: pointer; margin-bottom: 30px;">Tôi đã quên mật khẩu</div>
+            <div class="button-wrap">
+                <button class="next-btn" onclick="performLogin()">Đăng nhập</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            ['page1','page2','page3','pageError'].forEach(id => {
+                const el = document.getElementById(id);
+                el.style.display = 'none';
+            });
+            const target = document.getElementById(pageId);
+            target.style.display = 'flex';
+        }
+
+        function validateEmail() {
+            const email = document.getElementById('emailInput').value.trim();
+            if (!email) { alert("Vui lòng nhập email!"); return; }
+
+            // Bước 1: Kiểm tra đuôi email bằng JavaScript
+            if (!email.endsWith("@st.neu.edu.vn")) {
+                document.getElementById('errorEmailDisplay').value = email;
+                document.getElementById('errorMessage').innerText =
+                    "Chúng tôi không tìm thấy tài khoản có tên người dùng đó. Hãy đảm bảo rằng bạn đã nhập đúng tên người dùng.";
+                showPage('pageError');
+                return;
+            }
+
+            // Bước 2: Kiểm tra email có trong DB không (gọi Java)
+            fetch('/api/check-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('displayEmail').innerText = email;
+                    showPage('page3');
+                } else {
+                    document.getElementById('errorEmailDisplay').value = email;
+                    document.getElementById('errorMessage').innerText = data.message;
+                    showPage('pageError');
+                }
+            })
+            .catch(() => alert("Lỗi kết nối server!"));
+        }
+
+        function performLogin() {
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+
+            if (!password) { alert("Vui lòng nhập mật khẩu!"); return; }
+
+            // Gọi Java kiểm tra mật khẩu
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirect; // Chuyển sang homepage
+                } else {
+                    document.getElementById('passwordError').style.display = 'block';
+                    document.getElementById('passwordError').innerText = data.message;
+                }
+            })
+            .catch(() => alert("Lỗi kết nối server!"));
+        }
+    </script>
+</body>
+</html>
