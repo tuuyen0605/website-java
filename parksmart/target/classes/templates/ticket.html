@@ -83,6 +83,13 @@
       .sidebar { width:100%; }
       .xe-grid, .goi-grid { grid-template-columns:1fr; }
     }
+    .notification { cursor:pointer; }
+    .notif-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#C02727; color:white; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
+    .notif-popup { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:320px; z-index:999; overflow:hidden; }
+    .notif-header { padding:14px 18px; font-size:15px; font-weight:700; color:#085CA7; border-bottom:1px solid #f0f0f0; }
+    .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; }
+    .notif-item i { color:#F8B13F; margin-top:2px; }
+    .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
   </style>
 </head>
 <body>
@@ -103,9 +110,17 @@
       </div>
     </div>
     <div class="header-right">
-      <div class="notification">
+      <div class="notification" onclick="toggleNotif()" style="position:relative;">
         <i class="fa-regular fa-bell"></i>
-        <div class="badge">1</div>
+        <div class="notif-badge" th:if="${soBadge > 0}" th:text="${soBadge}"></div>
+        <div class="notif-popup" id="notifPopup">
+          <div class="notif-header">Thông báo</div>
+          <div th:if="${thongBao == null or thongBao.isEmpty()}" class="notif-empty">Không có thông báo mới</div>
+          <div th:each="tb : ${thongBao}" class="notif-item">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${tb.noiDung}"></span>
+          </div>
+        </div>
       </div>
       <div class="avatar" onclick="toggleDropdown()">
         <i class="fa-regular fa-user"></i>
@@ -442,6 +457,18 @@
       if (data.status === 'success') {
         ['buoc1','buoc2','buoc3'].forEach(id => document.getElementById(id).style.display = 'none');
         document.getElementById('buocThanhCong').style.display = 'block';
+        // Cập nhật badge chuông
+        fetch('/api/so-thong-bao')
+          .then(res => res.json())
+          .then(data => {
+            const badge = document.querySelector('.notif-badge');
+            if (data.so > 0) {
+              if (badge) {
+                badge.style.display = 'flex';
+                badge.innerText = data.so;
+              }
+            }
+          });
         for (let i = 1; i <= 3; i++) {
           const circle = document.getElementById('circle'+i);
           const label = document.getElementById('label'+i);
@@ -464,10 +491,23 @@
     d.style.display = d.style.display === 'none' ? 'block' : 'none';
   }
 
+  function toggleNotif() {
+    const p = document.getElementById('notifPopup');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') {
+      fetch('/api/doc-thong-bao', { method: 'POST' });
+    }
+  }
+
   document.addEventListener('click', function(e) {
     const avatar = document.querySelector('.avatar');
     if (!avatar.contains(e.target)) {
       document.getElementById('userDropdown').style.display = 'none';
+    }
+    const notif = document.querySelector('.notification');
+    if (notif && !notif.contains(e.target)) {
+      const p = document.getElementById('notifPopup');
+      if (p) p.style.display = 'none';
     }
   });
 </script>

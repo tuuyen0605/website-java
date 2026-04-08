@@ -48,8 +48,7 @@ public class AuthController {
             response.put("status", "success");
             response.put("role", user.getRole());
             response.put("fullName", user.getFullName());
-            response.put("redirect", "/homepage");
-        } else {
+response.put("redirect", user.getRole().equals("Admin") ? "/admin/ve" : "/homepage");        } else {
             response.put("status", "error");
             response.put("message", "Mật khẩu không chính xác. Vui lòng kiểm tra lại.");
         }

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quản lý vé - Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    .content { padding:24px; }
+    .page-header { margin-bottom:24px; }
+    .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; }
+
+    /* TABLE */
+    .table-wrap { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#085CA7; color:white; padding:14px 16px; font-size:14px; text-align:left; font-weight:600; }
+    td { padding:14px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f0f0; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#f9f9f9; }
+
+    .badge-trang-thai { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; }
+    .badge-hoat-dong { background:#dff5e4; color:#336D46; }
+    .badge-het-han { background:#fde8e8; color:#C02727; }
+
+    .btn-thanh-toan { padding:7px 16px; border-radius:20px; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+    .btn-chua { background:#fde8e8; color:#C02727; }
+    .btn-da { background:#dff5e4; color:#336D46; }
+
+    .empty { text-align:center; padding:40px; color:#999; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU">
+      </div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh - Admin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Admin'}">Admin</div>
+          <a href="/logout" class="dropdown-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div class="page-title">Quản lý thanh toán vé</div>
+      <div class="page-subtitle">Xác nhận thanh toán cho sinh viên</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sinh viên</th>
+            <th>Email</th>
+            <th>Loại xe</th>
+            <th>Gói vé</th>
+            <th>Biển số</th>
+            <th>Khu vực</th>
+            <th>Hết hạn</th>
+            <th>Giá</th>
+            <th>Trạng thái</th>
+            <th>Thanh toán</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${tatCaVe == null or tatCaVe.isEmpty()}">
+            <td colspan="10" class="empty">Chưa có vé nào được đăng ký</td>
+          </tr>
+          <tr th:each="ve : ${tatCaVe}">
+            <td th:text="${ve.user.fullName}"></td>
+            <td th:text="${ve.user.email}"></td>
+            <td th:text="${ve.loaiXe}"></td>
+            <td th:text="${ve.loaiVe}"></td>
+            <td th:text="${ve.bienSo != null and !ve.bienSo.isEmpty() ? ve.bienSo : '-'}"></td>
+            <td th:text="${ve.khuVuc}"></td>
+            <td th:text="${#temporals.format(ve.ngayHetHan, 'dd/MM/yyyy')}"></td>
+            <td th:text="${#numbers.formatInteger(ve.gia, 0, 'COMMA') + ' đ'}"></td>
+            <td>
+              <span class="badge-trang-thai badge-hoat-dong" th:if="${ve.trangThai == 'Hoạt động'}" th:text="${ve.trangThai}"></span>
+              <span class="badge-trang-thai badge-het-han" th:if="${ve.trangThai == 'Hết hạn'}" th:text="${ve.trangThai}"></span>
+            </td>
+            <td>
+              <button class="btn-thanh-toan btn-chua" th:if="${!ve.thanhToan}"
+                      th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
+                      th:id="'btn-' + ${ve.id}">
+                <i class="fa-solid fa-clock"></i> Chưa TT
+              </button>
+              <button class="btn-thanh-toan btn-da" th:if="${ve.thanhToan}"
+                      th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
+                      th:id="'btn-' + ${ve.id}">
+                <i class="fa-solid fa-circle-check"></i> Đã TT
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function doiThanhToan(ticketId, btn) {
+    fetch('/api/admin/doi-thanh-toan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ticketId: ticketId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        if (data.thanhToan) {
+          btn.className = 'btn-thanh-toan btn-da';
+          btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Đã TT';
+        } else {
+          btn.className = 'btn-thanh-toan btn-chua';
+          btn.innerHTML = '<i class="fa-solid fa-clock"></i> Chưa TT';
+        }
+      } else {
+        alert(data.message);
+      }
+    })
+    .catch(() => alert('Lỗi kết nối server!'));
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+</script>
+</body>
+</html>

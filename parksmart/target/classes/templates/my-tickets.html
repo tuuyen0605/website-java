@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vé của tôi - Parksmart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .notification { position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; cursor:pointer; }
+    .notif-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#C02727; color:white; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+    .notif-popup { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:320px; z-index:999; overflow:hidden; }
+    .notif-header { padding:14px 18px; font-size:15px; font-weight:700; color:#085CA7; border-bottom:1px solid #f0f0f0; }
+    .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; }
+    .notif-item i { color:#F8B13F; margin-top:2px; }
+    .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
+
+    .main { display:flex; flex:1; }
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; }
+
+    /* PAGE HEADER */
+    .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; position:sticky; top:80px; background:#f5f5f5; z-index:99; padding-bottom:16px; }
+    .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; }
+    .btn-dangky { background:#085CA7; color:white; border:none; padding:12px 20px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; text-decoration:none; }
+    .btn-dangky:hover { background:#064d8f; }
+
+    /* BOX */
+    .box { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:24px; }
+    .box-title { font-size:17px; font-weight:700; color:#111; margin-bottom:16px; }
+
+    /* FILTER */
+    .filter-row { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .filter-btn { padding:8px 18px; border-radius:20px; border:none; font-size:14px; font-weight:500; cursor:pointer; background:#f0f0f0; color:#555; }
+    .filter-btn.active { background:#085CA7; color:white; }
+
+    /* TABLE */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:700px; }
+    th { font-size:13px; font-weight:600; color:#555; padding:10px 14px; border-bottom:2px solid #eee; text-align:left; }
+    td { font-size:14px; color:#333; padding:14px; border-bottom:1px solid #f0f0f0; vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafafa; }
+
+    .ma-gd { color:#085CA7; font-weight:700; font-size:13px; }
+    .badge-tt { padding:5px 14px; border-radius:20px; font-size:13px; font-weight:600; display:inline-block; }
+    .badge-cho { background:#FFF3CD; color:#856404; }
+    .badge-da { background:#dff5e4; color:#336D46; }
+    .badge-het-han { background:#fde8e8; color:#C02727; }
+
+    .empty { text-align:center; padding:40px; color:#999; }
+    .empty i { font-size:40px; margin-bottom:12px; display:block; color:#ddd; }
+
+    @media(max-width:768px) {
+      .main { flex-direction:column; }
+      .sidebar { width:100%; position:static; height:auto; }
+      .page-header { flex-direction:column; gap:12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU">
+      </div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="notification" onclick="toggleNotif()" style="position:relative;">
+        <i class="fa-regular fa-bell"></i>
+        <div class="notif-badge" th:if="${soBadge > 0}" th:text="${soBadge}"></div>
+        <div class="notif-popup" id="notifPopup">
+          <div class="notif-header">Thông báo</div>
+          <div th:if="${thongBao == null or thongBao.isEmpty()}" class="notif-empty">Không có thông báo mới</div>
+          <div th:each="tb : ${thongBao}" class="notif-item">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${tb.noiDung}"></span>
+          </div>
+        </div>
+      </div>
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Người dùng'}">Nguyễn Văn A</div>
+          <a href="/logout" class="dropdown-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <a href="/homepage" class="menu-item"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+      <a href="/vi-tri-bai-do" class="menu-item"><i class="fa-solid fa-location-dot"></i> Vị trí bãi đỗ</a>
+      <a href="/dang-ky-ve" class="menu-item"><i class="fa-solid fa-ticket"></i> Đăng ký vé</a>
+      <a href="/ve-cua-toi" class="menu-item active"><i class="fa-solid fa-receipt"></i> Vé của tôi</a>
+      <a href="/chi-phi" class="menu-item"><i class="fa-solid fa-clock-rotate-left"></i> Chi phí và lịch sử</a>
+    </div>
+
+    <div class="content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Vé của tôi</div>
+          <div class="page-subtitle">Xem lịch sử thanh toán và chi phí gửi xe</div>
+        </div>
+        <a href="/dang-ky-ve" class="btn-dangky">
+          <i class="fa-solid fa-plus"></i> Đăng ký vé
+        </a>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Lịch sử giao dịch</div>
+
+        <!-- FILTER -->
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filter('tat-ca', this)">Tất cả</button>
+          <button class="filter-btn" onclick="filter('da-thanh-toan', this)">Đã thanh toán</button>
+          <button class="filter-btn" onclick="filter('cho-thanh-toan', this)">Chờ thanh toán</button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="veTable">
+            <thead>
+              <tr>
+                <th>Biển số</th>
+                <th>Loại xe</th>
+                <th>Ngày đăng ký</th>
+                <th>Loại vé</th>
+                <th>Số tiền</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${danhSachVe == null or danhSachVe.isEmpty()}">
+                <td colspan="6" class="empty">
+                  <i class="fa-solid fa-ticket"></i>
+                  Bạn chưa có vé nào
+                </td>
+              </tr>
+              <tr th:each="ve : ${danhSachVe}"
+                  th:attr="data-thanh-toan=${ve.thanhToan}, data-loai-ve=${ve.loaiVe}">
+                <td th:text="${ve.bienSo != null and !ve.bienSo.isEmpty() ? ve.bienSo : 'Không có'}"></td>
+                <td th:text="${ve.loaiXe}"></td>
+                <td th:text="${#temporals.format(ve.ngayDangKy, 'dd/MM/yyyy')}"></td>
+                <td th:text="${ve.loaiVe}"></td>
+                <td th:text="${#numbers.formatInteger(ve.gia, 0, 'COMMA') + ' đ'}"></td>
+                <td>
+                  <span class="badge-tt badge-cho" th:if="${!ve.thanhToan}">Chờ thanh toán</span>
+                  <span class="badge-tt badge-da" th:if="${ve.thanhToan}">Đã thanh toán</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filter(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('#veTable tbody tr[data-loai-ve]');
+    rows.forEach(row => {
+      const thanhToan = row.getAttribute('data-thanh-toan') === 'true';
+      const loaiVe = row.getAttribute('data-loai-ve');
+      let show = true;
+      if (type === 'da-thanh-toan') show = thanhToan;
+      else if (type === 'cho-thanh-toan') show = !thanhToan;
+      else if (type === 've-thang') show = loaiVe === 'Vé tháng';
+      else if (type === 've-quy') show = loaiVe === 'Vé quý';
+      else if (type === 've-nam') show = loaiVe === 'Vé năm';
+      row.style.display = show ? '' : 'none';
+    });
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function toggleNotif() {
+    const p = document.getElementById('notifPopup');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') {
+      fetch('/api/doc-thong-bao', { method: 'POST' });
+    }
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    const notif = document.querySelector('.notification');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+    if (!notif.contains(e.target)) document.getElementById('notifPopup').style.display = 'none';
+  });
+</script>
+</body>
+</html>

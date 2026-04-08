@@ -11,19 +11,21 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Liên kết với user đăng ký vé
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "loai_xe", nullable = false)
-    private String loaiXe; // "Xe máy", "Xe ô tô", "Xe đạp"
+    private String loaiXe;
 
     @Column(name = "loai_ve", nullable = false)
-    private String loaiVe; // "Vé tháng", "Vé quý", "Vé năm"
+    private String loaiVe;
 
-    @Column(name = "bien_so", nullable = false)
-    private String bienSo;
+    @Column(name = "bien_so")
+    private String bienSo; // null với xe đạp
+
+    @Column(name = "khu_vuc", nullable = false)
+    private String khuVuc;
 
     @Column(name = "gia", nullable = false)
     private Long gia;
@@ -35,20 +37,26 @@ public class Ticket {
     private LocalDate ngayHetHan;
 
     @Column(name = "trang_thai", nullable = false)
-    private String trangThai; // "Hoạt động", "Hết hạn", "Đã hủy"
+    private String trangThai; // "Hoạt động", "Hết hạn"
+
+    @Column(name = "thanh_toan", nullable = false)
+    private boolean thanhToan = false; // false = Chưa thanh toán, true = Đã thanh toán
 
     public Ticket() {}
 
-    public Ticket(User user, String loaiXe, String loaiVe, String bienSo,
+    // Hàm tạo đầy đủ
+    public Ticket(User user, String loaiXe, String loaiVe, String bienSo, String khuVuc,
                   Long gia, LocalDate ngayDangKy, LocalDate ngayHetHan) {
         this.user = user;
         this.loaiXe = loaiXe;
         this.loaiVe = loaiVe;
         this.bienSo = bienSo;
+        this.khuVuc = khuVuc;
         this.gia = gia;
         this.ngayDangKy = ngayDangKy;
         this.ngayHetHan = ngayHetHan;
         this.trangThai = "Hoạt động";
+        this.thanhToan = false;
     }
 
     // Getters & Setters
@@ -61,6 +69,8 @@ public class Ticket {
     public void setLoaiVe(String loaiVe) { this.loaiVe = loaiVe; }
     public String getBienSo() { return bienSo; }
     public void setBienSo(String bienSo) { this.bienSo = bienSo; }
+    public String getKhuVuc() { return khuVuc; }
+    public void setKhuVuc(String khuVuc) { this.khuVuc = khuVuc; }
     public Long getGia() { return gia; }
     public void setGia(Long gia) { this.gia = gia; }
     public LocalDate getNgayDangKy() { return ngayDangKy; }
@@ -69,4 +79,6 @@ public class Ticket {
     public void setNgayHetHan(LocalDate ngayHetHan) { this.ngayHetHan = ngayHetHan; }
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+    public boolean isThanhToan() { return thanhToan; }
+    public void setThanhToan(boolean thanhToan) { this.thanhToan = thanhToan; }
 }

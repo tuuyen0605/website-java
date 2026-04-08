@@ -1,4 +1,0 @@
-com\example\parksmart\service\TicketService.class
-com\example\parksmart\model\Ticket.class
-com\example\parksmart\controller\TicketController.class
-com\example\parksmart\repository\TicketRepository.class

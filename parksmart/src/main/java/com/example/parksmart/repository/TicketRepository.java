@@ -10,9 +10,12 @@ import java.util.List;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
-    // Lấy tất cả vé của một user
+    // Lấy tất cả vé của user
     List<Ticket> findByUser(User user);
 
     // Lấy vé đang hoạt động của user
     List<Ticket> findByUserAndTrangThai(User user, String trangThai);
+
+    // Lấy tất cả vé (cho admin)
+    List<Ticket> findAllByOrderByNgayDangKyDesc();
 }
