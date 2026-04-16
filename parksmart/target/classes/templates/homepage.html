@@ -35,6 +35,9 @@
       align-items:center;
       padding:0 24px;
       color:white;
+      position:sticky;
+      top:0;
+      z-index:100;
     }
 
     .header-left{
@@ -123,6 +126,10 @@
       background:white;
       border-right:1px solid #ddd;
       padding:16px;
+      position:sticky;
+      top:80px;
+      height:calc(100vh - 80px);
+      overflow-y:auto;
     }
 
     .menu-item{
@@ -284,6 +291,20 @@
     .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; }
     .notif-item i { color:#F8B13F; margin-top:2px; }
     .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
+    .sys-notif-section { margin-top:24px; }
+    .sys-notif-title { font-size:18px; font-weight:700; margin-bottom:14px; color:#333; }
+    .sys-notif-item { background:white; border-radius:10px; padding:16px 20px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid #085CA7; }
+    .sys-notif-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+    .sys-notif-tieu-de { font-size:15px; font-weight:700; color:#085CA7; }
+    .sys-notif-date { font-size:12px; color:#999; }
+    .sys-notif-noi-dung { font-size:14px; color:#444; line-height:1.6; }
+    .notif-sys-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; background:#e8f0fe; }
+    .notif-sys-item i { color:#085CA7; margin-top:2px; }
+    .sys-notif-noi-dung p { margin-bottom:6px; }
+    .sys-notif-noi-dung strong { font-weight:700; }
+    .sys-notif-noi-dung em { font-style:italic; }
+    .sys-notif-noi-dung u { text-decoration:underline; }
+    .sys-notif-noi-dung ul, .sys-notif-noi-dung ol { padding-left:20px; margin-bottom:6px; }
   </style>
 </head>
 <body>
@@ -313,6 +334,13 @@
             <div th:each="tb : ${thongBao}" class="notif-item">
               <i class="fa-solid fa-triangle-exclamation"></i>
               <span th:text="${tb.noiDung}"></span>
+            </div>
+            <div th:each="stb : ${thongBaoHeThong}" class="notif-sys-item">
+              <i class="fa-solid fa-bullhorn"></i>
+              <div>
+                <div style="font-weight:600; margin-bottom:2px;" th:text="${stb.tieuDe}"></div>
+                <div th:utext="${stb.noiDung}"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -359,6 +387,11 @@
           Vé của tôi
         </a>
 
+        <a href="/bao-cao-su-co" class="menu-item">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Báo cáo sự cố
+        </a>
+
       </div>
 
       <!-- CONTENT -->
@@ -380,7 +413,7 @@
         <div class="cards">
           <div class="card">
             <div>
-              <h3>Khu vực bãi đã đỗ</h3>
+              <h3>Khu vực bãi đỗ</h3>
               <div class="number blue">05</div>
             </div>
             <div class="icon icon-blue">
@@ -390,24 +423,37 @@
 
           <div class="card">
             <div>
-              <h3>Vé của tôi</h3>
-              <div class="number yellow">02</div>
+              <h3>Tổng sức chứa</h3>
+              <div class="number yellow">3000+</div>
             </div>
             <div class="icon icon-yellow">
-              <i class="fa-solid fa-ticket"></i>
+              <i class="fa-solid fa-motorcycle"></i>
             </div>
           </div>
 
           <div class="card">
             <div>
-              <h3>Chi phí và lịch sử thanh toán</h3>
-              <div class="number green">60</div>
+              <h3>Thời gian xử lý trung bình</h3>
+              <div class="number green">0,5s</div>
             </div>
             <div class="icon icon-green">
-              <i class="fa-solid fa-wallet"></i>
+              <i class="fa-solid fa-bolt"></i>
             </div>
           </div>
         </div>
+
+        <!-- THÔNG BÁO HỆ THỐNG -->
+        <div class="sys-notif-section" th:if="${thongBaoHeThong != null and !thongBaoHeThong.isEmpty()}">
+          <div class="sys-notif-title"><i class="fa-solid fa-bullhorn" style="color:#085CA7; margin-right:8px;"></i>Thông báo từ Ban quản lý</div>
+          <div th:each="stb : ${thongBaoHeThong}" class="sys-notif-item">
+            <div class="sys-notif-head">
+              <div class="sys-notif-tieu-de" th:text="${stb.tieuDe}"></div>
+              <div class="sys-notif-date" th:text="${#temporals.format(stb.ngayTao, 'dd/MM/yyyy')}"></div>
+            </div>
+            <div class="sys-notif-noi-dung" th:utext="${stb.noiDung}"></div>
+          </div>
+        </div>
+
       </div>
 
     </div>

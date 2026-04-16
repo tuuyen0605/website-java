@@ -41,10 +41,19 @@
 
     /* PARKING CARD */
     .parking-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:16px; }
+    .parking-card.tam-dong { opacity:0.7; }
+    .parking-card.dong-cua { opacity:0.6; }
     .parking-top { display:flex; align-items:center; gap:14px; margin-bottom:8px; }
     .parking-name { font-size:18px; font-weight:700; color:#085CA7; }
-    .status { background:#dff5e4; color:#336D46; padding:5px 14px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status { padding:5px 14px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status-mo { background:#dff5e4; color:#336D46; }
+    .status-it { background:#FFF3CD; color:#856404; }
+    .status-tam { background:#fde8e8; color:#C02727; }
+    .status-dong { background:#f0f0f0; color:#666; }
     .parking-location { color:#666; font-size:15px; }
+    .banner-canh-bao { background:#FFF8E1; border-left:3px solid #F8B13F; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:14px; color:#5D4037; display:none; }
+    .banner-canh-bao i { color:#F8B13F; margin-right:8px; }
+    .parking-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.12); transform:translateY(-1px); transition:all 0.2s; }
 
     /* DROPDOWN */
     .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
@@ -56,13 +65,6 @@
       .main { flex-direction:column; }
       .sidebar { width:100%; }
     }
-    .notification { cursor:pointer; }
-    .notif-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#C02727; color:white; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
-    .notif-popup { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:320px; z-index:999; overflow:hidden; }
-    .notif-header { padding:14px 18px; font-size:15px; font-weight:700; color:#085CA7; border-bottom:1px solid #f0f0f0; }
-    .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; }
-    .notif-item i { color:#F8B13F; margin-top:2px; }
-    .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
   </style>
 </head>
 <body>
@@ -80,18 +82,10 @@
       </div>
     </div>
     <div class="header-right">
-      <div class="notification" onclick="toggleNotif()" style="position:relative;">
-          <i class="fa-regular fa-bell"></i>
-          <div class="notif-badge" th:if="${soBadge > 0}" th:text="${soBadge}"></div>
-          <div class="notif-popup" id="notifPopup">
-            <div class="notif-header">Thông báo</div>
-            <div th:if="${thongBao == null or thongBao.isEmpty()}" class="notif-empty">Không có thông báo mới</div>
-            <div th:each="tb : ${thongBao}" class="notif-item">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-              <span th:text="${tb.noiDung}"></span>
-            </div>
-          </div>
-        </div>
+      <div class="notification">
+        <i class="fa-regular fa-bell"></i>
+        <div class="badge">1</div>
+      </div>
       <div class="avatar" onclick="toggleDropdown()">
         <i class="fa-regular fa-user"></i>
         <div class="dropdown" id="userDropdown">
@@ -113,6 +107,8 @@
       <a href="/vi-tri-bai-do" class="menu-item active"><i class="fa-solid fa-location-dot"></i> Vị trí bãi đỗ</a>
       <a href="/dang-ky-ve" class="menu-item"><i class="fa-solid fa-ticket"></i> Đăng ký vé</a>
       <a href="/ve-cua-toi" class="menu-item"><i class="fa-solid fa-receipt"></i> Vé của tôi</a>
+      <a href="/bao-cao-su-co" class="menu-item"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+
     </div>
 
     <!-- CONTENT -->
@@ -120,49 +116,29 @@
       <div class="page-title">Vị trí bãi đỗ</div>
       <div class="page-subtitle">Theo dõi vị trí của các bãi xe</div>
 
-      <div class="parking-card">
-        <div class="parking-top">
-          <div class="parking-name">Nhà để xe số 1</div>
-          <div class="status">Mở cửa 5:00</div>
-          <span style="font-size:14px; color:#555;">Thời gian đóng cửa 22:00</span>
-        </div>
-        <div class="parking-location"><i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>Địa điểm: Cổng 207 Giải Phóng, cạnh tòa A2 - Đại học Kinh tế Quốc dân</div>
+      <!-- BANNER CẢNH BÁO KHI CÓ BÃI TẠM ĐÓNG -->
+      <div class="banner-canh-bao" id="bannerCanhBao">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="bannerText"></span>
       </div>
 
-      <div class="parking-card">
+      <!-- DANH SÁCH BÃI ĐỖ ĐỘNG -->
+      <div th:each="baiDo : ${baiDoList}"
+           th:class="'parking-card ' + (${baiDo.trangThai == 'Tạm đóng'} ? 'tam-dong' : (${baiDo.trangThai == 'Đóng cửa'} ? 'dong-cua' : ''))"
+           th:onclick="'window.location.href=\'/bai-do/' + ${baiDo.id} + '\''"
+           style="cursor:pointer;">
         <div class="parking-top">
-          <div class="parking-name">Nhà để xe số 2</div>
-          <div class="status">Mở cửa 5:00</div>
-          <span style="font-size:14px; color:#555;">Thời gian đóng cửa 22:00</span>
+          <div class="parking-name" th:text="${baiDo.ten}"></div>
+          <div th:class="'status ' + (${baiDo.trangThai == 'Mở cửa'} ? 'status-mo' : (${baiDo.trangThai == 'Còn ít chỗ'} ? 'status-it' : (${baiDo.trangThai == 'Tạm đóng'} ? 'status-tam' : 'status-dong')))"
+               th:text="${baiDo.trangThai}"></div>
+          <span style="font-size:14px; color:#555;" th:if="${baiDo.trangThai != 'Tạm đóng' and baiDo.trangThai != 'Đóng cửa'}">
+            <span th:text="${baiDo.gioMo + ' - ' + baiDo.gioDong}"></span>
+          </span>
         </div>
-        <div class="parking-location"><i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>Địa điểm: Cổng Trần Đại Nghĩa, cạnh giảng đường C - Đại học Kinh tế Quốc dân</div>
-      </div>
-
-      <div class="parking-card">
-        <div class="parking-top">
-          <div class="parking-name">Nhà để xe số 4</div>
-          <div class="status">Mở cửa 5:00</div>
-          <span style="font-size:14px; color:#555;">Thời gian đóng cửa 22:00</span>
+        <div class="parking-location">
+          <i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>
+          Địa điểm: <span th:text="${baiDo.diaChi}"></span>
         </div>
-        <div class="parking-location"><i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>Địa điểm: Cổng Trần Đại Nghĩa, cạnh giảng đường C - Đại học Kinh tế Quốc dân</div>
-      </div>
-
-      <div class="parking-card">
-        <div class="parking-top">
-          <div class="parking-name">Nhà để xe KTX</div>
-          <div class="status">Mở cửa 5:00</div>
-          <span style="font-size:14px; color:#555;">Thời gian đóng cửa 22:00</span>
-        </div>
-        <div class="parking-location"><i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>Địa điểm: Tòa KTX Đại học Kinh tế Quốc dân</div>
-      </div>
-
-      <div class="parking-card">
-        <div class="parking-top">
-          <div class="parking-name">Hầm để xe B2</div>
-          <div class="status">Mở cửa 5:00</div>
-          <span style="font-size:14px; color:#555;">Thời gian đóng cửa 22:00</span>
-        </div>
-        <div class="parking-location"><i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>Địa điểm: Tầng hầm B2 nhà Trung tâm đào tạo, trường Đại học Kinh tế Quốc dân</div>
       </div>
 
     </div>
@@ -182,14 +158,5 @@
     }
   });
 </script>
-<script>
-function toggleNotif() {
-    const p = document.getElementById('notifPopup');
-    p.style.display = p.style.display === 'none' ? 'block' : 'none';
-    if (p.style.display === 'block') {
-        fetch('/api/doc-thong-bao', { method: 'POST' });
-    }
-}
-</script>
-
+</body>
 </html>

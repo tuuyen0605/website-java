@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Báo cáo sự cố - Parksmart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .notification { position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; cursor:pointer; }
+    .notif-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#C02727; color:white; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
+    .notif-popup { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:320px; z-index:999; overflow:hidden; }
+    .notif-header { padding:14px 18px; font-size:15px; font-weight:700; color:#085CA7; border-bottom:1px solid #f0f0f0; }
+    .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; align-items:flex-start; }
+    .notif-item i { color:#F8B13F; margin-top:2px; }
+    .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    .main { display:flex; flex:1; }
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; }
+    .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; margin-bottom:24px; }
+
+    /* FORM */
+    .form-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:24px; margin-bottom:24px; }
+    .form-title-main { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .form-subtitle { font-size:14px; color:#726E6E; margin-bottom:24px; }
+    .form-title { font-size:17px; font-weight:700; color:#085CA7; margin-bottom:20px; }
+    .form-group { margin-bottom:16px; }
+    .form-group label { font-size:14px; color:#555; display:block; margin-bottom:6px; font-weight:500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:12px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:15px; outline:none; font-family:'Be Vietnam Pro', sans-serif;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:#085CA7; }
+    .form-group textarea { resize:vertical; min-height:100px; }
+    .optional-tag { font-size:12px; color:#999; margin-left:6px; }
+
+    /* FILE UPLOAD */
+    .file-upload { border:2px dashed #ddd; border-radius:8px; padding:20px; text-align:center; cursor:pointer; transition:border-color 0.2s; }
+    .file-upload:hover { border-color:#085CA7; }
+    .file-upload input { display:none; }
+    .file-upload i { font-size:28px; color:#ccc; margin-bottom:8px; }
+    .file-upload p { font-size:14px; color:#999; }
+    .file-preview { margin-top:12px; display:none; }
+    .file-preview img { max-width:200px; max-height:150px; border-radius:8px; object-fit:cover; }
+
+    .btn-submit { width:100%; padding:14px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; }
+    .btn-submit:hover { background:#064d8f; }
+
+    /* HISTORY */
+    .history-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:12px; }
+    .history-top { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .history-date { font-size:13px; color:#999; }
+    .badge-status { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+    .badge-cho { background:#FFF3CD; color:#856404; }
+    .badge-dang { background:#e8f0fe; color:#085CA7; }
+    .badge-xong { background:#dff5e4; color:#336D46; }
+    .history-mo-ta { font-size:14px; color:#333; margin-bottom:6px; }
+    .history-bien-so { font-size:13px; color:#666; }
+    .history-ghi-chu { font-size:13px; color:#085CA7; margin-top:6px; font-style:italic; }
+    .empty-history { text-align:center; color:#999; padding:30px; font-size:14px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU"></div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="notification" onclick="toggleNotif()" style="position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white;">
+        <i class="fa-regular fa-bell"></i>
+        <div class="notif-badge" th:if="${soBadge > 0}" th:text="${soBadge}"></div>
+        <div class="notif-popup" id="notifPopup">
+          <div class="notif-header">Thông báo</div>
+          <div th:if="${thongBao == null or thongBao.isEmpty()}" class="notif-empty">Không có thông báo mới</div>
+          <div th:each="tb : ${thongBao}" class="notif-item">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${tb.noiDung}"></span>
+          </div>
+        </div>
+      </div>
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Người dùng'}">Nguyễn Văn A</div>
+          <a href="/logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <a href="/homepage" class="menu-item"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+      <a href="/vi-tri-bai-do" class="menu-item"><i class="fa-solid fa-location-dot"></i> Vị trí bãi đỗ</a>
+      <a href="/dang-ky-ve" class="menu-item"><i class="fa-solid fa-ticket"></i> Đăng ký vé</a>
+      <a href="/ve-cua-toi" class="menu-item"><i class="fa-solid fa-receipt"></i> Vé của tôi</a>
+      <a href="/bao-cao-su-co" class="menu-item active"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+    </div>
+
+    <div class="content">
+      <div class="page-title">Báo cáo sự cố</div>
+      <div class="page-subtitle">Ghi nhận sự cố tại bãi đỗ xe để được hỗ trợ</div>
+
+      <!-- FORM GỬI BÁO CÁO -->
+      <div class="form-card">
+        <div class="form-title"><i class="fa-solid fa-circle-exclamation" style="color:#C02727; margin-right:8px;"></i>Gửi báo cáo mới</div>
+
+        <div class="form-group">
+          <label>Mô tả sự cố <span style="color:#C02727;">*</span></label>
+          <textarea id="moTa" placeholder="VD: Xe tôi bị va chạm, gãy gương bên trái..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Biển số xe cần liên hệ <span class="optional-tag">(không bắt buộc)</span></label>
+          <input type="text" id="bienSoNghi" placeholder="VD: 29BD-06555">
+        </div>
+
+        <div class="form-group">
+          <label>Khu vực xảy ra <span class="optional-tag"></span></label>
+          <select id="khuVuc">
+            <option value="">-- Chọn khu vực --</option>
+            <option>Nhà để xe số 1 - Cổng 207 Giải Phóng, cạnh tòa A2</option>
+            <option>Nhà để xe số 2 - Cổng Trần Đại Nghĩa, cạnh giảng đường C</option>
+            <option>Nhà để xe số 4 - Cổng Trần Đại Nghĩa, cạnh giảng đường C</option>
+            <option>Nhà để xe KTX - Tòa KTX Đại học Kinh tế Quốc dân</option>
+            <option>Hầm để xe B2 - Tầng hầm B2 nhà Trung tâm đào tạo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ảnh bằng chứng <span class="optional-tag">(không bắt buộc)</span></label>
+          <div class="file-upload" onclick="document.getElementById('anhInput').click()">
+            <input type="file" id="anhInput" accept="image/*" onchange="previewAnh(this)">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Nhấn để chọn ảnh (JPG, PNG)</p>
+          </div>
+          <div class="file-preview" id="filePreview">
+            <img id="previewImg" src="" alt="Preview">
+          </div>
+        </div>
+
+        <button class="btn-submit" onclick="guiBaoCao()">
+          <i class="fa-solid fa-paper-plane"></i> Gửi báo cáo
+        </button>
+      </div>
+
+      <!-- LỊCH SỬ BÁO CÁO -->
+      <div style="margin-bottom:16px; font-size:17px; font-weight:700; color:#085CA7;">
+        <i class="fa-solid fa-clock-rotate-left" style="margin-right:8px;"></i>Lịch sử báo cáo
+      </div>
+
+      <div th:if="${danhSachBaoCao == null or danhSachBaoCao.isEmpty()}" class="empty-history">
+        Bạn chưa gửi báo cáo nào
+      </div>
+
+      <div th:each="bc : ${danhSachBaoCao}" class="history-card">
+        <div class="history-top">
+          <span class="badge-status badge-cho" th:if="${bc.trangThai == 'Chờ xử lý'}" th:text="${bc.trangThai}"></span>
+          <span class="badge-status badge-dang" th:if="${bc.trangThai == 'Đang xử lý'}" th:text="${bc.trangThai}"></span>
+          <span class="badge-status badge-xong" th:if="${bc.trangThai == 'Đã giải quyết'}" th:text="${bc.trangThai}"></span>
+          <span class="history-date" th:text="${#temporals.format(bc.ngayTao, 'dd/MM/yyyy HH:mm')}"></span>
+        </div>
+        <div class="history-mo-ta" th:text="${bc.moTa}"></div>
+        <div class="history-bien-so" th:if="${bc.bienSoNghi != null and !bc.bienSoNghi.isEmpty()}">
+          <i class="fa-solid fa-car" style="color:#085CA7; margin-right:4px;"></i>Biển số nghi: <strong th:text="${bc.bienSoNghi}"></strong>
+        </div>
+        <div class="history-ghi-chu" th:if="${bc.ghiChuAdmin != null and !bc.ghiChuAdmin.isEmpty()}">
+          <i class="fa-solid fa-comment" style="margin-right:4px;"></i>Admin: <span th:text="${bc.ghiChuAdmin}"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function previewAnh(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('filePreview').style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function guiBaoCao() {
+    const moTa = document.getElementById('moTa').value.trim();
+    const bienSoNghi = document.getElementById('bienSoNghi').value.trim();
+    const khuVuc = document.getElementById('khuVuc').value;
+    const anh = document.getElementById('anhInput').files[0];
+
+    if (!moTa) { alert('Vui lòng mô tả sự cố!'); return; }
+
+    const formData = new FormData();
+    formData.append('moTa', moTa);
+    if (bienSoNghi) formData.append('bienSoNghi', bienSoNghi);
+    if (khuVuc) formData.append('khuVuc', khuVuc);
+    if (anh) formData.append('anh', anh);
+
+    fetch('/api/bao-cao-su-co', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert('Gửi báo cáo thành công!');
+          location.reload();
+        } else {
+          alert(data.message);
+        }
+      })
+      .catch(() => alert('Lỗi kết nối server!'));
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function toggleNotif() {
+    const p = document.getElementById('notifPopup');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') fetch('/api/doc-thong-bao', { method: 'POST' });
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    const notif = document.querySelector('.notification');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+    if (notif && !notif.contains(e.target)) document.getElementById('notifPopup').style.display = 'none';
+  });
+</script>
+</body>
+</html>

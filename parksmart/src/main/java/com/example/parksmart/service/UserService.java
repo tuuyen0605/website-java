@@ -57,4 +57,20 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email).orElse(null);
     }
+
+    // Lấy tất cả user
+    public java.util.List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    // Đổi role user — xử lý ngoại lệ nếu không tìm thấy
+    public User doiRole(Long userId, String role) throws Exception {
+        java.util.Optional<User> opt = userRepository.findById(userId);
+        if (opt.isEmpty()) {
+            throw new Exception("Không tìm thấy người dùng với ID: " + userId);
+        }
+        User user = opt.get();
+        user.setRole(role);
+        return userRepository.save(user);
+    }
 }

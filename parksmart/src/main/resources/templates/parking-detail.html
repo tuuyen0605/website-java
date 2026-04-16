@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${baiDo.ten} + ' - Parksmart'">Chi tiết bãi đỗ</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .notification { position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:22px; color:white; cursor:pointer; }
+    .notif-badge { position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#C02727; color:white; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:bold; }
+    .notif-popup { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); width:320px; z-index:999; overflow:hidden; }
+    .notif-header { padding:14px 18px; font-size:15px; font-weight:700; color:#085CA7; border-bottom:1px solid #f0f0f0; }
+    .notif-item { padding:12px 18px; font-size:13px; color:#333; border-bottom:1px solid #f5f5f5; display:flex; gap:10px; }
+    .notif-item i { color:#F8B13F; margin-top:2px; }
+    .notif-empty { padding:20px; text-align:center; color:#999; font-size:14px; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    .main { display:flex; flex:1; }
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; overflow-y:auto; }
+
+    /* BACK BUTTON */
+    .back-btn { display:inline-flex; align-items:center; gap:8px; color:#085CA7; font-size:14px; font-weight:500; cursor:pointer; margin-bottom:16px; text-decoration:none; }
+    .back-btn:hover { text-decoration:underline; }
+
+    /* HERO CARD */
+    .hero-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:24px; margin-bottom:16px; }
+    .hero-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+    .hero-name { font-size:22px; font-weight:800; color:#085CA7; }
+    .status-badge { padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status-mo { background:#dff5e4; color:#336D46; }
+    .status-it { background:#FFF3CD; color:#856404; }
+    .status-tam { background:#fde8e8; color:#C02727; }
+    .status-dong { background:#f0f0f0; color:#666; }
+    .hero-address { font-size:14px; color:#666; margin-bottom:12px; }
+    .hero-rating { display:flex; align-items:center; gap:8px; font-size:15px; }
+    .stars { color:#F8B13F; }
+    .rating-count { color:#999; font-size:13px; }
+
+    /* GIÁ */
+    .section-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:16px; }
+    .section-title { font-size:16px; font-weight:700; color:#085CA7; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .gia-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .gia-item { background:#f9f9f9; border-radius:8px; padding:12px 16px; }
+    .gia-label { font-size:12px; color:#999; margin-bottom:4px; }
+    .gia-value { font-size:16px; font-weight:700; color:#085CA7; }
+
+    /* TIỆN ÍCH */
+    .tien-ich-grid { display:flex; flex-wrap:wrap; gap:10px; }
+    .tien-ich-item { display:flex; align-items:center; gap:6px; background:#e8f0fe; color:#085CA7; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:500; }
+    .tien-ich-item i { font-size:13px; }
+    .no-tien-ich { color:#999; font-size:14px; }
+
+    /* ĐÁNH GIÁ */
+    .star-select { display:flex; gap:6px; margin-bottom:12px; }
+    .star-btn { font-size:28px; color:#ddd; cursor:pointer; background:none; border:none; transition:color 0.1s; }
+    .star-btn.active { color:#F8B13F; }
+    .review-input { width:100%; padding:12px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:14px; outline:none; font-family:'Be Vietnam Pro', sans-serif; resize:vertical; min-height:80px; margin-bottom:12px; }
+    .review-input:focus { border-color:#085CA7; }
+    .submit-review-btn { padding:10px 24px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+    .submit-review-btn:hover { background:#064d8f; }
+
+    .review-item { padding:14px 0; border-bottom:1px solid #f0f0f0; }
+    .review-item:last-child { border-bottom:none; }
+    .review-top { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .review-name { font-size:14px; font-weight:600; color:#333; }
+    .review-stars { color:#F8B13F; font-size:13px; }
+    .review-date { font-size:12px; color:#999; margin-left:auto; }
+    .review-text { font-size:14px; color:#555; line-height:1.6; }
+    .no-review { color:#999; font-size:14px; text-align:center; padding:20px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU"></div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="notification" onclick="toggleNotif()" style="position:relative;">
+        <i class="fa-regular fa-bell"></i>
+        <div class="notif-badge" th:if="${soBadge > 0}" th:text="${soBadge}"></div>
+        <div class="notif-popup" id="notifPopup">
+          <div class="notif-header">Thông báo</div>
+          <div th:if="${thongBao == null or thongBao.isEmpty()}" class="notif-empty">Không có thông báo mới</div>
+          <div th:each="tb : ${thongBao}" class="notif-item">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${tb.noiDung}"></span>
+          </div>
+        </div>
+      </div>
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Người dùng'}">Nguyễn Văn A</div>
+          <a href="/logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <a href="/homepage" class="menu-item"><i class="fa-solid fa-chart-line"></i> Tổng quan</a>
+      <a href="/vi-tri-bai-do" class="menu-item active"><i class="fa-solid fa-location-dot"></i> Vị trí bãi đỗ</a>
+      <a href="/dang-ky-ve" class="menu-item"><i class="fa-solid fa-ticket"></i> Đăng ký vé</a>
+      <a href="/ve-cua-toi" class="menu-item"><i class="fa-solid fa-receipt"></i> Vé của tôi</a>
+      <a href="/bao-cao-su-co" class="menu-item"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+    </div>
+
+    <div class="content">
+      <a href="/vi-tri-bai-do" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
+
+      <!-- HERO -->
+      <div class="hero-card">
+        <div class="hero-top">
+          <div class="hero-name" th:text="${baiDo.ten}"></div>
+          <div th:class="'status-badge ' + (${baiDo.trangThai == 'Mở cửa'} ? 'status-mo' : (${baiDo.trangThai == 'Còn ít chỗ'} ? 'status-it' : (${baiDo.trangThai == 'Tạm đóng'} ? 'status-tam' : 'status-dong')))"
+               th:text="${baiDo.trangThai}"></div>
+        </div>
+        <div class="hero-address">
+          <i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:6px;"></i>
+          <span th:text="${baiDo.diaChi}"></span>
+        </div>
+        <div class="hero-address" th:if="${baiDo.trangThai != 'Tạm đóng' and baiDo.trangThai != 'Đóng cửa'}">
+          <i class="fa-regular fa-clock" style="color:#085CA7; margin-right:6px;"></i>
+          Giờ hoạt động: <span th:text="${baiDo.gioMo + ' - ' + baiDo.gioDong}"></span>
+        </div>
+        <div class="hero-rating">
+          <div class="stars">
+            <span th:each="i : ${#numbers.sequence(1,5)}">
+              <i th:class="${i <= diemTrungBinh} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+            </span>
+          </div>
+          <span style="font-weight:700;" th:text="${diemTrungBinh}"></span>
+          <span class="rating-count" th:text="'(' + ${danhGiaList.size()} + ' đánh giá)'"></span>
+        </div>
+      </div>
+
+      <!-- GIÁ -->
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-tag"></i> Bảng giá</div>
+        <div class="gia-grid">
+          <div class="gia-item">
+            <div class="gia-label">Xe máy (trước 19:00)</div>
+            <div class="gia-value" th:text="${#numbers.formatInteger(baiDo.giaXeMayTruoc, 0, 'COMMA') + ' đ/lượt'}"></div>
+          </div>
+          <div class="gia-item">
+            <div class="gia-label">Xe máy (sau 19:00)</div>
+            <div class="gia-value" th:text="${#numbers.formatInteger(baiDo.giaXeMaySau, 0, 'COMMA') + ' đ/lượt'}"></div>
+          </div>
+          <div class="gia-item">
+            <div class="gia-label">Xe ô tô</div>
+            <div class="gia-value" th:text="${#numbers.formatInteger(baiDo.giaOToGio, 0, 'COMMA') + ' đ/giờ'}"></div>
+          </div>
+          <div class="gia-item">
+            <div class="gia-label">Xe đạp</div>
+            <div class="gia-value" th:text="${baiDo.giaXeDap == 0} ? 'Miễn phí' : (${#numbers.formatInteger(baiDo.giaXeDap, 0, 'COMMA') + ' đ/lượt'})"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIỆN ÍCH -->
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-star"></i> Tiện ích</div>
+        <div class="tien-ich-grid">
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('mai_che')}"><i class="fa-solid fa-umbrella"></i> Có mái che</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('camera')}"><i class="fa-solid fa-camera"></i> Camera an ninh</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('bao_ve')}"><i class="fa-solid fa-shield-halved"></i> Bảo vệ 24/7</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('sac_dien')}"><i class="fa-solid fa-bolt"></i> Trạm sạc xe điện</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('wc')}"><i class="fa-solid fa-restroom"></i> Nhà vệ sinh</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('den_dem')}"><i class="fa-solid fa-lightbulb"></i> Chiếu sáng ban đêm</div>
+          <div class="tien-ich-item" th:if="${baiDo.hasTienIch('xe_dap')}"><i class="fa-solid fa-bicycle"></i> Chỗ để xe đạp</div>
+          <div class="no-tien-ich" th:if="${baiDo.tienIch == null or baiDo.tienIch.isBlank()}">Chưa có thông tin tiện ích</div>
+        </div>
+      </div>
+
+      <!-- ĐÁNH GIÁ -->
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-comments"></i> Đánh giá & Bình luận</div>
+
+        <!-- FORM GỬI ĐÁNH GIÁ -->
+        <div style="background:#f9f9f9; border-radius:8px; padding:16px; margin-bottom:20px;">
+          <div style="font-size:14px; font-weight:600; color:#333; margin-bottom:8px;"
+               th:text="${myReview != null} ? 'Chỉnh sửa đánh giá của bạn' : 'Viết đánh giá của bạn'"></div>
+          <div class="star-select" id="starSelect">
+            <button class="star-btn" th:classappend="${myReview != null and myReview.soSao >= 1} ? 'active'" onclick="chonSao(1)">&#9733;</button>
+            <button class="star-btn" th:classappend="${myReview != null and myReview.soSao >= 2} ? 'active'" onclick="chonSao(2)">&#9733;</button>
+            <button class="star-btn" th:classappend="${myReview != null and myReview.soSao >= 3} ? 'active'" onclick="chonSao(3)">&#9733;</button>
+            <button class="star-btn" th:classappend="${myReview != null and myReview.soSao >= 4} ? 'active'" onclick="chonSao(4)">&#9733;</button>
+            <button class="star-btn" th:classappend="${myReview != null and myReview.soSao >= 5} ? 'active'" onclick="chonSao(5)">&#9733;</button>
+          </div>
+          <textarea class="review-input" id="binhLuanInput" placeholder="Nhận xét của bạn về bãi đỗ xe..."
+                    th:text="${myReview != null ? myReview.binhLuan : ''}"></textarea>
+          <button class="submit-review-btn" onclick="guiDanhGia()">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span th:text="${myReview != null} ? 'Cập nhật đánh giá' : 'Gửi đánh giá'"></span>
+          </button>
+        </div>
+
+        <!-- DANH SÁCH ĐÁNH GIÁ -->
+        <div th:if="${danhGiaList == null or danhGiaList.isEmpty()}" class="no-review">
+          Chưa có đánh giá nào. Hãy là người đầu tiên!
+        </div>
+        <div th:each="dg : ${danhGiaList}" class="review-item">
+          <div class="review-top">
+            <div class="review-name" th:text="${dg.user.fullName}"></div>
+            <div class="review-stars">
+              <span th:each="i : ${#numbers.sequence(1,5)}">
+                <i th:class="${i <= dg.soSao} ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+              </span>
+            </div>
+            <div class="review-date" th:text="${#temporals.format(dg.ngayTao, 'dd/MM/yyyy')}"></div>
+          </div>
+          <div class="review-text" th:text="${dg.binhLuan}"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  const baiDoId = [[${baiDo.id}]];
+  let selectedStar = [[${myReview != null ? myReview.soSao : 0}]];
+
+  function chonSao(n) {
+    selectedStar = n;
+    document.querySelectorAll('.star-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i < n);
+    });
+  }
+
+  function guiDanhGia() {
+    if (selectedStar === 0) { alert('Vui lòng chọn số sao!'); return; }
+    const binhLuan = document.getElementById('binhLuanInput').value.trim();
+    fetch('/api/danh-gia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ baiDoId, soSao: selectedStar, binhLuan })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') { alert('Đánh giá thành công!'); location.reload(); }
+      else alert(data.message);
+    });
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+  function toggleNotif() {
+    const p = document.getElementById('notifPopup');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    if (p.style.display === 'block') fetch('/api/doc-thong-bao', { method: 'POST' });
+  }
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    const notif = document.querySelector('.notification');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+    if (notif && !notif.contains(e.target)) document.getElementById('notifPopup').style.display = 'none';
+  });
+</script>
+</body>
+</html>

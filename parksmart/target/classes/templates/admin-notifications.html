@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thông báo hệ thống - Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    .main { display:flex; flex:1; }
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; }
+    .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; margin-bottom:24px; }
+
+    .form-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:24px; margin-bottom:24px; }
+    .form-title { font-size:16px; font-weight:700; color:#085CA7; margin-bottom:16px; }
+    .form-group { margin-bottom:14px; }
+    .form-group label { font-size:14px; color:#555; display:block; margin-bottom:6px; font-weight:500; }
+    .form-group input { width:100%; padding:12px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:15px; outline:none; font-family:'Be Vietnam Pro', sans-serif; }
+    .form-group input:focus { border-color:#085CA7; }
+
+    /* RICH TEXT EDITOR */
+    .editor-toolbar { display:flex; flex-wrap:wrap; gap:4px; padding:8px; background:#f8f8f8; border:1.5px solid #e0e0e0; border-bottom:none; border-radius:8px 8px 0 0; }
+    .toolbar-btn { padding:5px 10px; border:1px solid #ddd; background:white; border-radius:4px; cursor:pointer; font-size:13px; font-family:'Be Vietnam Pro',sans-serif; line-height:1; }
+    .toolbar-btn:hover { background:#e8f0fe; border-color:#085CA7; }
+    .toolbar-sep { width:1px; background:#ddd; margin:2px 4px; }
+    .editor-body { min-height:160px; padding:12px; border:1.5px solid #e0e0e0; border-radius:0 0 8px 8px; font-size:15px; outline:none; font-family:'Be Vietnam Pro',sans-serif; line-height:1.7; background:white; }
+    .editor-body:focus { border-color:#085CA7; }
+
+    .btn-send { padding:12px 24px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; margin-top:12px; }
+    .btn-send:hover { background:#064d8f; }
+
+    .notif-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:18px 24px; margin-bottom:12px; border-left:4px solid #085CA7; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+    .notif-info { flex:1; }
+    .notif-tieu-de { font-size:16px; font-weight:700; color:#085CA7; margin-bottom:8px; }
+    .notif-noi-dung { font-size:14px; color:#444; line-height:1.7; margin-bottom:8px; }
+    .notif-noi-dung p { margin-bottom:6px; }
+    .notif-noi-dung strong { font-weight:700; }
+    .notif-noi-dung ul, .notif-noi-dung ol { padding-left:20px; margin-bottom:6px; }
+    .notif-meta { font-size:12px; color:#999; }
+    .btn-xoa { padding:7px 14px; background:#fde8e8; color:#C02727; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; flex-shrink:0; }
+    .btn-xoa:hover { background:#f5c5c5; }
+    .empty { text-align:center; padding:40px; color:#999; }
+    .list-title { font-size:16px; font-weight:700; color:#085CA7; margin-bottom:14px; }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU"></div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh - Admin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Admin'}">Admin</div>
+          <a href="/logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <a href="/admin/ve" class="menu-item"><i class="fa-solid fa-ticket"></i> Quản lý vé</a>
+      <a href="/admin/bai-do" class="menu-item"><i class="fa-solid fa-location-dot"></i> Quản lý bãi đỗ</a>
+      <a href="/admin/users" class="menu-item"><i class="fa-solid fa-users"></i> Quản lý người dùng</a>
+      <a href="/admin/thong-bao" class="menu-item active"><i class="fa-solid fa-bullhorn"></i> Thông báo hệ thống</a>
+      <a href="/admin/bao-cao" class="menu-item"><i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố</a>
+    </div>
+
+    <div class="content">
+      <div class="page-title">Thông báo hệ thống</div>
+      <div class="page-subtitle">Gửi thông báo đến tất cả sinh viên</div>
+
+      <!-- FORM -->
+      <div class="form-card">
+        <div class="form-title"><i class="fa-solid fa-plus-circle" style="margin-right:6px;"></i>Tạo thông báo mới</div>
+        <div class="form-group">
+          <label>Tiêu đề</label>
+          <input type="text" id="tieuDe" placeholder="VD: Nghỉ lễ 30/4 - 1/5">
+        </div>
+        <div class="form-group">
+          <label>Nội dung</label>
+          <div class="editor-toolbar">
+            <button class="toolbar-btn" onclick="fmt('bold')"><b>B</b></button>
+            <button class="toolbar-btn" onclick="fmt('italic')"><i>I</i></button>
+            <button class="toolbar-btn" onclick="fmt('underline')"><u>U</u></button>
+            <div class="toolbar-sep"></div>
+            <button class="toolbar-btn" onclick="fmt('insertUnorderedList')">&#8226; List</button>
+            <button class="toolbar-btn" onclick="fmt('insertOrderedList')">1. List</button>
+            <div class="toolbar-sep"></div>
+            <select id="sizeSelect" onchange="fmtSize(this.value)" style="padding:4px 8px; border:1px solid #ddd; border-radius:4px; font-size:13px; cursor:pointer;">
+              <option value="3">Bình thường</option>
+              <option value="4">Lớn</option>
+              <option value="5">Rất lớn</option>
+              <option value="2">Nhỏ</option>
+            </select>
+            <div class="toolbar-sep"></div>
+            <label style="font-size:13px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+              Màu chữ <input type="color" id="colorPick" value="#000000" style="width:26px; height:26px; cursor:pointer; border:1px solid #ddd; border-radius:4px; padding:1px;">
+            </label>
+            <label style="font-size:13px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+              Nền <input type="color" id="bgPick" value="#ffff00" style="width:26px; height:26px; cursor:pointer; border:1px solid #ddd; border-radius:4px; padding:1px;">
+            </label>
+            <button class="toolbar-btn" onclick="applyColor()">Áp dụng màu</button>
+          </div>
+          <div id="editorBody" class="editor-body" contenteditable="true"></div>
+        </div>
+        <button class="btn-send" onclick="guiThongBao()">
+          <i class="fa-solid fa-paper-plane"></i> Gửi thông báo
+        </button>
+      </div>
+
+      <!-- DANH SÁCH -->
+      <div class="list-title"><i class="fa-solid fa-list" style="margin-right:6px;"></i>Danh sách thông báo đã gửi</div>
+
+      <div th:if="${danhSachThongBao == null or danhSachThongBao.isEmpty()}" class="empty">Chưa có thông báo nào</div>
+
+      <div th:each="tb : ${danhSachThongBao}" class="notif-card">
+        <div class="notif-info">
+          <div class="notif-tieu-de" th:text="${tb.tieuDe}"></div>
+          <div class="notif-noi-dung" th:utext="${tb.noiDung}"></div>
+          <div class="notif-meta">
+            <i class="fa-regular fa-clock" style="margin-right:4px;"></i>
+            <span th:text="${#temporals.format(tb.ngayTao, 'dd/MM/yyyy HH:mm')}"></span>
+          </div>
+        </div>
+        <button class="btn-xoa" th:onclick="'xoaThongBao(' + ${tb.id} + ')'">
+          <i class="fa-solid fa-trash"></i> Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fmt(cmd) {
+    document.getElementById('editorBody').focus();
+    document.execCommand(cmd, false, null);
+  }
+
+  function fmtSize(s) {
+    document.getElementById('editorBody').focus();
+    document.execCommand('fontSize', false, s);
+  }
+
+  function applyColor() {
+    const color = document.getElementById('colorPick').value;
+    const bg = document.getElementById('bgPick').value;
+    document.getElementById('editorBody').focus();
+    document.execCommand('foreColor', false, color);
+    document.execCommand('hiliteColor', false, bg);
+  }
+
+  function guiThongBao() {
+    const tieuDe = document.getElementById('tieuDe').value.trim();
+    const noiDung = document.getElementById('editorBody').innerHTML.trim();
+    if (!tieuDe) { alert('Vui lòng nhập tiêu đề!'); return; }
+    if (!noiDung || noiDung === '<br>') { alert('Vui lòng nhập nội dung!'); return; }
+
+    fetch('/api/admin/tao-thong-bao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tieuDe, noiDung })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') { alert('Đã gửi thông báo!'); location.reload(); }
+      else alert(data.message);
+    });
+  }
+
+  function xoaThongBao(id) {
+    if (!confirm('Xóa thông báo này?')) return;
+    fetch('/api/admin/xoa-thong-bao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') location.reload();
+      else alert(data.message);
+    });
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+</script>
+</body>
+</html>

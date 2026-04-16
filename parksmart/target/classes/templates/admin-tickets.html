@@ -24,28 +24,44 @@
     .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
     .dropdown-logout:hover { background:#fff0f0; }
 
-    .content { padding:24px; }
+    .main { display:flex; flex:1; }
+
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; overflow-x:auto; }
     .page-header { margin-bottom:24px; }
     .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
     .page-subtitle { font-size:14px; color:#726E6E; }
 
-    /* TABLE */
-    .table-wrap { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:#085CA7; color:white; padding:14px 16px; font-size:14px; text-align:left; font-weight:600; }
-    td { padding:14px 16px; font-size:14px; color:#333; border-bottom:1px solid #f0f0f0; }
+    .table-wrap { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; white-space:nowrap; }
+    th { background:#085CA7; color:white; padding:14px 16px; font-size:13px; text-align:left; font-weight:600; white-space:nowrap; }
+    td { padding:12px 16px; font-size:13px; color:#333; border-bottom:1px solid #f0f0f0; vertical-align:middle; white-space:nowrap; }
     tr:last-child td { border-bottom:none; }
     tr:hover td { background:#f9f9f9; }
 
-    .badge-trang-thai { padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; display:inline-block; }
-    .badge-hoat-dong { background:#dff5e4; color:#336D46; }
-    .badge-het-han { background:#fde8e8; color:#C02727; }
-
-    .btn-thanh-toan { padding:7px 16px; border-radius:20px; font-size:13px; font-weight:600; border:none; cursor:pointer; }
+    .btn-thanh-toan { padding:7px 16px; border-radius:20px; font-size:13px; font-weight:600; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
     .btn-chua { background:#fde8e8; color:#C02727; }
     .btn-da { background:#dff5e4; color:#336D46; }
 
     .empty { text-align:center; padding:40px; color:#999; }
+    .filter-row { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+    .filter-btn { padding:8px 18px; border-radius:20px; border:none; font-size:14px; font-weight:500; cursor:pointer; background:#f0f0f0; color:#555; }
+    .filter-btn.active { background:#085CA7; color:white; }
+    .filter-btn.sap-het { }
+    .filter-btn.da-het { }
+    .so-ve { font-size:14px; color:#726E6E; }
+    .search-input { padding:8px 16px 8px 36px; border-radius:20px; border:1.5px solid #ddd; font-size:14px; outline:none; width:220px; font-family:'Be Vietnam Pro', sans-serif; }
+    .search-input:focus { border-color:#085CA7; }
+    .search-wrap { position:relative; }
+    .search-wrap i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#999; font-size:13px; }
+    .filter-select { padding:8px 14px; border-radius:20px; border:1.5px solid #ddd; font-size:14px; color:#555; outline:none; cursor:pointer; font-family:'Be Vietnam Pro', sans-serif; }
+    .filter-select:focus { border-color:#085CA7; }
+    .filter-row-2 { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
   </style>
 </head>
 <body>
@@ -74,65 +90,159 @@
     </div>
   </div>
 
-  <div class="content">
-    <div class="page-header">
-      <div class="page-title">Quản lý thanh toán vé</div>
-      <div class="page-subtitle">Xác nhận thanh toán cho sinh viên</div>
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <a href="/admin/ve" class="menu-item active">
+        <i class="fa-solid fa-ticket"></i> Quản lý vé
+      </a>
+      <a href="/admin/bai-do" class="menu-item">
+        <i class="fa-solid fa-location-dot"></i> Quản lý bãi đỗ
+      </a>
+      <a href="/admin/users" class="menu-item">
+        <i class="fa-solid fa-users"></i> Quản lý người dùng
+      </a>
+      <a href="/admin/thong-bao" class="menu-item">
+        <i class="fa-solid fa-bullhorn"></i> Thông báo hệ thống
+      </a>
+      <a href="/admin/bao-cao" class="menu-item">
+        <i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố
+      </a>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Sinh viên</th>
-            <th>Email</th>
-            <th>Loại xe</th>
-            <th>Gói vé</th>
-            <th>Biển số</th>
-            <th>Khu vực</th>
-            <th>Hết hạn</th>
-            <th>Giá</th>
-            <th>Trạng thái</th>
-            <th>Thanh toán</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:if="${tatCaVe == null or tatCaVe.isEmpty()}">
-            <td colspan="10" class="empty">Chưa có vé nào được đăng ký</td>
-          </tr>
-          <tr th:each="ve : ${tatCaVe}">
-            <td th:text="${ve.user.fullName}"></td>
-            <td th:text="${ve.user.email}"></td>
-            <td th:text="${ve.loaiXe}"></td>
-            <td th:text="${ve.loaiVe}"></td>
-            <td th:text="${ve.bienSo != null and !ve.bienSo.isEmpty() ? ve.bienSo : '-'}"></td>
-            <td th:text="${ve.khuVuc}"></td>
-            <td th:text="${#temporals.format(ve.ngayHetHan, 'dd/MM/yyyy')}"></td>
-            <td th:text="${#numbers.formatInteger(ve.gia, 0, 'COMMA') + ' đ'}"></td>
-            <td>
-              <span class="badge-trang-thai badge-hoat-dong" th:if="${ve.trangThai == 'Hoạt động'}" th:text="${ve.trangThai}"></span>
-              <span class="badge-trang-thai badge-het-han" th:if="${ve.trangThai == 'Hết hạn'}" th:text="${ve.trangThai}"></span>
-            </td>
-            <td>
-              <button class="btn-thanh-toan btn-chua" th:if="${!ve.thanhToan}"
-                      th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
-                      th:id="'btn-' + ${ve.id}">
-                <i class="fa-solid fa-clock"></i> Chưa TT
-              </button>
-              <button class="btn-thanh-toan btn-da" th:if="${ve.thanhToan}"
-                      th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
-                      th:id="'btn-' + ${ve.id}">
-                <i class="fa-solid fa-circle-check"></i> Đã TT
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="page-header">
+        <div class="page-title">Quản lý thanh toán vé</div>
+        <div class="page-subtitle">Xác nhận thanh toán cho sinh viên</div>
+      </div>
+
+      <!-- FILTER -->
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filter('tat-ca', this)">Tất cả</button>
+        <button class="filter-btn" onclick="filter('con-han', this)">Còn hạn</button>
+        <button class="filter-btn" onclick="filter('sap-het', this)">Sắp hết hạn</button>
+        <button class="filter-btn" onclick="filter('da-het', this)">Đã hết hạn</button>
+      </div>
+
+      <!-- FILTER ROW 2: Khu vực + Search -->
+      <div class="filter-row-2">
+        <select class="filter-select" id="filterKhuVuc" onchange="applyFilters()">
+          <option value="">Tất cả khu vực</option>
+          <option>Nhà để xe số 1 - Cổng 207 Giải Phóng, cạnh tòa A2</option>
+          <option>Nhà để xe số 2 - Cổng Trần Đại Nghĩa, cạnh giảng đường C</option>
+          <option>Nhà để xe số 4 - Cổng Trần Đại Nghĩa, cạnh giảng đường C</option>
+          <option>Nhà để xe KTX - Tòa KTX Đại học Kinh tế Quốc dân</option>
+          <option>Hầm để xe B2 - Tầng hầm B2 nhà Trung tâm đào tạo</option>
+        </select>
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="search-input" id="searchInput" placeholder="Tìm tên, email, biển số..."
+            oninput="applyFilters()">
+        </div>
+        <span class="so-ve" id="soVe"></span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Thanh toán</th>
+              <th>Sinh viên</th>
+              <th>Email</th>
+              <th>Loại xe</th>
+              <th>Gói vé</th>
+              <th>Biển số</th>
+              <th>Khu vực</th>
+              <th>Hết hạn</th>
+              <th>Giá</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${tatCaVe == null or tatCaVe.isEmpty()}">
+              <td colspan="9" class="empty">Chưa có vé nào được đăng ký</td>
+            </tr>
+            <tr th:each="ve : ${tatCaVe}"
+                th:attr="data-ngay-het-han=${ve.ngayHetHan},data-ten=${ve.user.fullName},data-email=${ve.user.email},data-bien-so=${ve.bienSo},data-khu-vuc=${ve.khuVuc}">
+              <td>
+                <button class="btn-thanh-toan btn-chua" th:if="${!ve.thanhToan}"
+                        th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
+                        th:id="'btn-' + ${ve.id}">
+                  <i class="fa-solid fa-clock"></i> Chưa TT
+                </button>
+                <button class="btn-thanh-toan btn-da" th:if="${ve.thanhToan}"
+                        th:onclick="'doiThanhToan(' + ${ve.id} + ', this)'"
+                        th:id="'btn-' + ${ve.id}">
+                  <i class="fa-solid fa-circle-check"></i> Đã TT
+                </button>
+              </td>
+              <td th:text="${ve.user.fullName}"></td>
+              <td th:text="${ve.user.email}"></td>
+              <td th:text="${ve.loaiXe}"></td>
+              <td th:text="${ve.loaiVe}"></td>
+              <td th:text="${ve.bienSo != null and !ve.bienSo.isEmpty() ? ve.bienSo : '-'}"></td>
+              <td th:text="${ve.khuVuc}"></td>
+              <td th:text="${#temporals.format(ve.ngayHetHan, 'dd/MM/yyyy')}"></td>
+              <td th:text="${#numbers.formatInteger(ve.gia, 0, 'COMMA') + ' đ'}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  let currentFilterType = 'tat-ca';
+
+  function filter(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilterType = type;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const khuVuc = document.getElementById('filterKhuVuc').value.toLowerCase();
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('tbody tr[data-ngay-het-han]');
+    let count = 0;
+
+    rows.forEach(row => {
+      const ngayHetHan = new Date(row.getAttribute('data-ngay-het-han'));
+      ngayHetHan.setHours(0,0,0,0);
+      const diff = Math.ceil((ngayHetHan - today) / (1000 * 60 * 60 * 24));
+
+      // Filter theo hạn
+      let showByDate = true;
+      if (currentFilterType === 'con-han') showByDate = diff > 5;
+      else if (currentFilterType === 'sap-het') showByDate = diff >= 0 && diff <= 5;
+      else if (currentFilterType === 'da-het') showByDate = diff < 0;
+
+      // Filter theo khu vực
+      const rowKhuVuc = (row.getAttribute('data-khu-vuc') || '').toLowerCase();
+      const showByKhuVuc = !khuVuc || rowKhuVuc.includes(khuVuc);
+
+      // Filter theo search
+      const ten = (row.getAttribute('data-ten') || '').toLowerCase();
+      const email = (row.getAttribute('data-email') || '').toLowerCase();
+      const bienSo = (row.getAttribute('data-bien-so') || '').toLowerCase();
+      const showBySearch = !search || ten.includes(search) || email.includes(search) || bienSo.includes(search);
+
+      const show = showByDate && showByKhuVuc && showBySearch;
+      row.style.display = show ? '' : 'none';
+      if (show) count++;
+    });
+    document.getElementById('soVe').innerText = count + ' vé';
+  }
+
+  window.addEventListener('load', function() {
+    applyFilters();
+  });
+
   function doiThanhToan(ticketId, btn) {
     fetch('/api/admin/doi-thanh-toan', {
       method: 'POST',

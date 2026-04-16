@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quản lý bãi đỗ - Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Be Vietnam Pro', sans-serif; }
+    body { background:#f5f5f5; }
+    .app { min-height:100vh; display:flex; flex-direction:column; }
+
+    .header { height:80px; background:#085CA7; display:flex; justify-content:space-between; align-items:center; padding:0 24px; color:white; position:sticky; top:0; z-index:100; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { width:55px; height:55px; border-radius:50%; overflow:hidden; }
+    .logo img { width:100%; height:100%; object-fit:cover; }
+    .school-info h1 { font-size:22px; font-weight:700; }
+    .school-info p { font-size:14px; margin-top:4px; }
+    .header-right { display:flex; align-items:center; gap:18px; }
+    .avatar { width:48px; height:48px; background:white; border-radius:50%; border:2px solid #ddd; display:flex; align-items:center; justify-content:center; color:#085CA7; font-size:22px; cursor:pointer; position:relative; }
+    .dropdown { display:none; position:absolute; top:56px; right:0; background:white; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.15); min-width:200px; z-index:999; overflow:hidden; }
+    .dropdown-name { padding:16px 20px; font-size:16px; font-weight:600; color:#333; border-bottom:1px solid #f0f0f0; }
+    .dropdown-logout { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:15px; color:#C02727; text-decoration:none; }
+    .dropdown-logout:hover { background:#fff0f0; }
+
+    .main { display:flex; flex:1; }
+
+    .sidebar { width:220px; background:white; border-right:1px solid #ddd; padding:16px; position:sticky; top:80px; height:calc(100vh - 80px); overflow-y:auto; }
+    .menu-item { padding:12px 14px; margin-bottom:10px; border-radius:10px; font-size:16px; cursor:pointer; display:flex; align-items:center; gap:10px; text-decoration:none; color:#333; }
+    .menu-item i { width:20px; }
+    .menu-item:hover { background:#f0f0f0; }
+    .menu-item.active { background:#ACBFDE80; color:#085CA7; font-weight:600; }
+
+    .content { flex:1; padding:24px; }
+    .page-title { font-size:24px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .page-subtitle { font-size:14px; color:#726E6E; margin-bottom:24px; }
+
+    /* PARKING CARDS */
+    .parking-card { background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .parking-info { flex:1; }
+    .parking-name { font-size:17px; font-weight:700; color:#085CA7; margin-bottom:4px; }
+    .parking-address { font-size:14px; color:#666; }
+    .parking-right { display:flex; align-items:center; gap:12px; }
+
+    /* STATUS BADGE */
+    .status-badge { padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status-mo { background:#dff5e4; color:#336D46; }
+    .status-it { background:#FFF3CD; color:#856404; }
+    .status-tam { background:#fde8e8; color:#C02727; }
+    .status-dong { background:#f0f0f0; color:#666; }
+
+    /* STATUS SELECT */
+    .status-select { padding:8px 14px; border-radius:20px; border:1.5px solid #ddd; font-size:13px; font-weight:500; color:#333; outline:none; cursor:pointer; font-family:'Be Vietnam Pro', sans-serif; background:white; }
+    .status-select:focus { border-color:#085CA7; }
+
+    .save-btn { padding:8px 18px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+    .save-btn:hover { background:#064d8f; }
+    .save-btn:disabled { background:#ccc; cursor:not-allowed; }
+
+    .success-msg { font-size:13px; color:#336D46; display:none; }
+
+    /* EXPAND PANEL */
+    .expand-btn { padding:6px 14px; background:#f0f0f0; color:#555; border:none; border-radius:8px; font-size:13px; cursor:pointer; }
+    .expand-btn:hover { background:#e0e0e0; }
+    .expand-panel { display:none; margin-top:16px; padding-top:16px; border-top:1px solid #f0f0f0; }
+    .expand-panel.open { display:block; }
+    .panel-title { font-size:14px; font-weight:700; color:#085CA7; margin-bottom:10px; }
+    .gia-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:12px; }
+    .gia-item label { font-size:12px; color:#555; display:block; margin-bottom:4px; }
+    .gia-item input { width:100%; padding:8px 12px; border:1.5px solid #ddd; border-radius:8px; font-size:13px; outline:none; font-family:'Be Vietnam Pro', sans-serif; }
+    .gia-item input:focus { border-color:#085CA7; }
+    .tien-ich-wrap { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .tien-ich-check { display:none; }
+    .tien-ich-label { padding:6px 14px; border-radius:20px; border:1.5px solid #ddd; font-size:13px; cursor:pointer; color:#555; transition:all 0.15s; }
+    .tien-ich-check:checked + .tien-ich-label { background:#085CA7; color:white; border-color:#085CA7; }
+    .panel-save-btn { padding:8px 20px; background:#085CA7; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+    .review-list { margin-top:12px; }
+    .review-item { padding:10px 0; border-bottom:1px solid #f5f5f5; display:flex; align-items:flex-start; gap:10px; }
+    .review-item:last-child { border-bottom:none; }
+    .review-info { flex:1; }
+    .review-name { font-size:13px; font-weight:600; color:#333; }
+    .review-stars { color:#F8B13F; font-size:12px; }
+    .review-text { font-size:13px; color:#555; margin-top:2px; }
+    .xoa-btn { padding:4px 10px; background:#fde8e8; color:#C02727; border:none; border-radius:6px; font-size:12px; cursor:pointer; flex-shrink:0; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <img th:src="@{/images/logo-neu.png}" src="/images/logo-neu.png" alt="Logo NEU">
+      </div>
+      <div class="school-info">
+        <h1>Đại học Kinh tế Quốc dân</h1>
+        <p>Quản lý bãi xe thông minh - Admin</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="avatar" onclick="toggleDropdown()">
+        <i class="fa-regular fa-user"></i>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-name" th:text="${user != null ? user.fullName : 'Admin'}">Admin</div>
+          <a href="/logout" class="dropdown-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <a href="/admin/ve" class="menu-item">
+        <i class="fa-solid fa-ticket"></i> Quản lý vé
+      </a>
+      <a href="/admin/bai-do" class="menu-item active">
+        <i class="fa-solid fa-location-dot"></i> Quản lý bãi đỗ
+      </a>
+      <a href="/admin/users" class="menu-item">
+        <i class="fa-solid fa-users"></i> Quản lý người dùng
+      </a>
+      <a href="/admin/thong-bao" class="menu-item">
+        <i class="fa-solid fa-bullhorn"></i> Thông báo hệ thống
+      </a>
+      <a href="/admin/bao-cao" class="menu-item">
+        <i class="fa-solid fa-triangle-exclamation"></i> Báo cáo sự cố
+      </a>
+    </div>
+
+    <div class="content">
+      <div class="page-title">Quản lý bãi đỗ</div>
+      <div class="page-subtitle">Cập nhật trạng thái các nhà để xe</div>
+
+      <div th:each="baiDo : ${baiDoList}" class="parking-card" style="flex-direction:column; align-items:stretch;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px;">
+          <div class="parking-info">
+            <div class="parking-name" th:text="${baiDo.ten}"></div>
+            <div class="parking-address">
+              <i class="fa-solid fa-location-dot" style="color:#085CA7; margin-right:4px;"></i>
+              <span th:text="${baiDo.diaChi}"></span>
+            </div>
+          </div>
+          <div class="parking-right">
+            <select class="status-select" th:id="'select-' + ${baiDo.id}">
+              <option th:selected="${baiDo.trangThai == 'Mở cửa'}">Mở cửa</option>
+              <option th:selected="${baiDo.trangThai == 'Còn ít chỗ'}">Còn ít chỗ</option>
+              <option th:selected="${baiDo.trangThai == 'Tạm đóng'}">Tạm đóng</option>
+              <option th:selected="${baiDo.trangThai == 'Đóng cửa'}">Đóng cửa</option>
+            </select>
+            <button class="save-btn" th:onclick="'luuTrangThai(' + ${baiDo.id} + ', this)'">Lưu</button>
+            <span class="success-msg" th:id="'msg-' + ${baiDo.id}"><i class="fa-solid fa-circle-check"></i> Đã lưu</span>
+            <button class="expand-btn" th:onclick="'togglePanel(' + ${baiDo.id} + ')'">
+              <i class="fa-solid fa-chevron-down"></i> Chi tiết
+            </button>
+          </div>
+        </div>
+
+        <!-- EXPAND PANEL -->
+        <div class="expand-panel" th:id="'panel-' + ${baiDo.id}">
+
+          <!-- GIÁ -->
+          <div class="panel-title"><i class="fa-solid fa-tag"></i> Bảng giá</div>
+          <div class="gia-grid">
+            <div class="gia-item">
+              <label>Xe máy trước 19h (đ/lượt)</label>
+              <input type="number" th:id="'giaXeMayTruoc-' + ${baiDo.id}" th:value="${baiDo.giaXeMayTruoc}">
+            </div>
+            <div class="gia-item">
+              <label>Xe máy sau 19h (đ/lượt)</label>
+              <input type="number" th:id="'giaXeMaySau-' + ${baiDo.id}" th:value="${baiDo.giaXeMaySau}">
+            </div>
+            <div class="gia-item">
+              <label>Xe ô tô (đ/giờ)</label>
+              <input type="number" th:id="'giaOToGio-' + ${baiDo.id}" th:value="${baiDo.giaOToGio}">
+            </div>
+            <div class="gia-item">
+              <label>Xe đạp (đ/lượt, 0 = miễn phí)</label>
+              <input type="number" th:id="'giaXeDap-' + ${baiDo.id}" th:value="${baiDo.giaXeDap}">
+            </div>
+          </div>
+          <button class="panel-save-btn" th:onclick="'luuGia(' + ${baiDo.id} + ')'">Lưu giá</button>
+
+          <!-- TIỆN ÍCH -->
+          <div class="panel-title" style="margin-top:16px;"><i class="fa-solid fa-star"></i> Tiện ích</div>
+          <div class="tien-ich-wrap">
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-mai_che-' + ${baiDo.id}" value="mai_che" th:checked="${baiDo.hasTienIch('mai_che')}">
+            <label class="tien-ich-label" th:for="'ti-mai_che-' + ${baiDo.id}"><i class="fa-solid fa-umbrella"></i> Có mái che</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-camera-' + ${baiDo.id}" value="camera" th:checked="${baiDo.hasTienIch('camera')}">
+            <label class="tien-ich-label" th:for="'ti-camera-' + ${baiDo.id}"><i class="fa-solid fa-camera"></i> Camera an ninh</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-bao_ve-' + ${baiDo.id}" value="bao_ve" th:checked="${baiDo.hasTienIch('bao_ve')}">
+            <label class="tien-ich-label" th:for="'ti-bao_ve-' + ${baiDo.id}"><i class="fa-solid fa-shield-halved"></i> Bảo vệ 24/7</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-sac_dien-' + ${baiDo.id}" value="sac_dien" th:checked="${baiDo.hasTienIch('sac_dien')}">
+            <label class="tien-ich-label" th:for="'ti-sac_dien-' + ${baiDo.id}"><i class="fa-solid fa-bolt"></i> Trạm sạc xe điện</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-wc-' + ${baiDo.id}" value="wc" th:checked="${baiDo.hasTienIch('wc')}">
+            <label class="tien-ich-label" th:for="'ti-wc-' + ${baiDo.id}"><i class="fa-solid fa-restroom"></i> Nhà vệ sinh</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-den_dem-' + ${baiDo.id}" value="den_dem" th:checked="${baiDo.hasTienIch('den_dem')}">
+            <label class="tien-ich-label" th:for="'ti-den_dem-' + ${baiDo.id}"><i class="fa-solid fa-lightbulb"></i> Chiếu sáng ban đêm</label>
+
+            <input type="checkbox" class="tien-ich-check" th:id="'ti-xe_dap-' + ${baiDo.id}" value="xe_dap" th:checked="${baiDo.hasTienIch('xe_dap')}">
+            <label class="tien-ich-label" th:for="'ti-xe_dap-' + ${baiDo.id}"><i class="fa-solid fa-bicycle"></i> Chỗ để xe đạp</label>
+          </div>
+          <button class="panel-save-btn" th:onclick="'luuTienIch(' + ${baiDo.id} + ')'">Lưu tiện ích</button>
+
+          <!-- BÌNH LUẬN -->
+          <div class="panel-title" style="margin-top:16px;"><i class="fa-solid fa-comments"></i> Bình luận sinh viên</div>
+          <div class="review-list" th:id="'reviews-' + ${baiDo.id}">
+            <div style="font-size:13px; color:#999;">Đang tải...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function luuTrangThai(id, btn) {
+    const select = document.getElementById('select-' + id);
+    const trangThai = select.value;
+    const msg = document.getElementById('msg-' + id);
+
+    btn.disabled = true;
+    btn.innerText = 'Đang lưu...';
+
+    fetch('/api/admin/cap-nhat-bai-do', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, trangThai })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerText = 'Lưu';
+      if (data.status === 'success') {
+        msg.style.display = 'inline';
+        setTimeout(() => msg.style.display = 'none', 2000);
+      } else {
+        alert(data.message);
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerText = 'Lưu';
+      alert('Lỗi kết nối server!');
+    });
+  }
+
+  function togglePanel(id) {
+    const panel = document.getElementById('panel-' + id);
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) loadReviews(id);
+  }
+
+  function loadReviews(baiDoId) {
+    fetch('/api/reviews/' + baiDoId)
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('reviews-' + baiDoId);
+        if (data.length === 0) {
+          container.innerHTML = '<div style="font-size:13px;color:#999;">Chưa có bình luận nào</div>';
+          return;
+        }
+        container.innerHTML = data.map(r => `
+          <div class="review-item">
+            <div class="review-info">
+              <div class="review-name">${r.userName} <span class="review-stars">${'★'.repeat(r.soSao)}${'☆'.repeat(5-r.soSao)}</span></div>
+              <div class="review-text">${r.binhLuan || ''}</div>
+            </div>
+            <button class="xoa-btn" onclick="xoaBinhLuan(${r.id}, ${baiDoId})">Xóa</button>
+          </div>`).join('');
+      });
+  }
+
+  function xoaBinhLuan(reviewId, baiDoId) {
+    if (!confirm('Xóa bình luận này?')) return;
+    fetch('/api/admin/xoa-binh-luan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reviewId })
+    }).then(res => res.json()).then(data => {
+      if (data.status === 'success') loadReviews(baiDoId);
+      else alert(data.message);
+    });
+  }
+
+  function luuGia(id) {
+    const gia = {
+      id,
+      giaXeMayTruoc: Number(document.getElementById('giaXeMayTruoc-' + id).value),
+      giaXeMaySau: Number(document.getElementById('giaXeMaySau-' + id).value),
+      giaOToGio: Number(document.getElementById('giaOToGio-' + id).value),
+      giaXeDap: Number(document.getElementById('giaXeDap-' + id).value)
+    };
+    fetch('/api/admin/cap-nhat-gia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(gia)
+    }).then(res => res.json()).then(data => {
+      alert(data.status === 'success' ? 'Đã lưu giá!' : data.message);
+    });
+  }
+
+  function luuTienIch(id) {
+    const checks = document.querySelectorAll(`input.tien-ich-check[id^='ti-'][id$='-${id}']:checked`);
+    const tienIch = Array.from(checks).map(c => c.value).join(',');
+    fetch('/api/admin/cap-nhat-tien-ich', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, tienIch })
+    }).then(res => res.json()).then(data => {
+      alert(data.status === 'success' ? 'Đã lưu tiện ích!' : data.message);
+    });
+  }
+
+  function toggleDropdown() {
+    const d = document.getElementById('userDropdown');
+    d.style.display = d.style.display === 'none' ? 'block' : 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    const avatar = document.querySelector('.avatar');
+    if (!avatar.contains(e.target)) document.getElementById('userDropdown').style.display = 'none';
+  });
+</script>
+</body>
+</html>

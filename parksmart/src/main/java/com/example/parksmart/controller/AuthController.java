@@ -101,6 +101,33 @@ response.put("redirect", user.getRole().equals("Admin") ? "/admin/ve" : "/homepa
         return response;
     }
 
+    // Admin đổi role user
+    @PostMapping("/admin/doi-role")
+    public Map<String, Object> doiRole(@RequestBody Map<String, Object> request,
+                                        HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null || !loggedInUser.getRole().equals("Admin")) {
+            response.put("status", "error");
+            response.put("message", "Bạn không có quyền thực hiện thao tác này!");
+            return response;
+        }
+
+        try {
+            Long userId = ((Number) request.get("userId")).longValue();
+            String role = (String) request.get("role");
+            User user = userService.doiRole(userId, role);
+            response.put("status", "success");
+            response.put("role", user.getRole());
+            response.put("message", "Đổi quyền thành công!");
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
+
     // Logout
     @GetMapping("/logout")
     public Map<String, Object> logout(HttpSession session) {
